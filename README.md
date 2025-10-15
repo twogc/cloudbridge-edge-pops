@@ -1,8 +1,8 @@
-# 🌍 CloudBridge Edge PoP Nodes
+# CloudBridge Edge PoP Nodes
 
 Edge PoP узлы CloudBridge Relay с Inter-PoP MASQUE связностью, умной маршрутизацией и tenant изоляцией.
 
-## 🎯 Назначение
+## Назначение
 
 Этот репозиторий содержит конфигурации для Edge PoP узлов CloudBridge Relay:
 
@@ -13,7 +13,7 @@ Edge PoP узлы CloudBridge Relay с Inter-PoP MASQUE связностью, у
 - **🛡️ Tenant Isolation** - VRF и Calico Network Policies
 - **📊 Metrics Export** - Экспорт метрик для мониторинга
 
-## 🏗️ Архитектура Edge PoP
+## Архитектура Edge PoP
 
 ```mermaid
 graph TB
@@ -48,7 +48,7 @@ graph TB
     class CP control
 ```
 
-## 📦 Компоненты
+## Компоненты
 
 ### **Moscow PoP (RU-MOW)**
 - **Назначение**: Российский региональный узел
@@ -70,7 +70,7 @@ graph TB
 - **Функции**: QUIC/MASQUE контексты, mTLS, умная маршрутизация
 - **Конфигурация**: `masque/`
 
-## 🚀 Быстрый старт
+## Быстрый старт
 
 ### **Развертывание Edge PoP**
 
@@ -104,7 +104,7 @@ kubectl exec -n cloudbridge-relay deployment/relay-mow -- \
   -d '{"source": "MOW", "targets": ["FRA", "AMS"]}'
 ```
 
-## 🔧 Конфигурация
+## Конфигурация
 
 ### **Relay Deployment**
 
@@ -226,7 +226,7 @@ spec:
           app: relay
 ```
 
-## 📊 Мониторинг Edge PoP
+## Мониторинг Edge PoP
 
 ### **Ключевые метрики**
 
@@ -280,7 +280,7 @@ spec:
 }
 ```
 
-## 🔒 Безопасность
+## Безопасность
 
 ### **mTLS между PoP**
 
@@ -333,7 +333,7 @@ spec:
       port: 3478
 ```
 
-## 🧪 Тестирование
+## Тестирование
 
 ### **PoP тесты**
 
@@ -361,7 +361,7 @@ spec:
 ./scripts/test-handover.sh
 ```
 
-## 📈 Масштабирование
+## Масштабирование
 
 ### **Горизонтальное масштабирование**
 
@@ -389,7 +389,7 @@ resources:
     memory: "8Gi"
 ```
 
-## 🔄 Обновления
+## Обновления
 
 ### **Rolling update**
 
@@ -407,7 +407,7 @@ kubectl set image deployment/relay-ams relay=cloudbridge/relay:v2.1.0 -n cloudbr
 kubectl patch deployment relay-mow -n cloudbridge-relay -p '{"spec":{"strategy":{"type":"RollingUpdate","rollingUpdate":{"maxUnavailable":1,"maxSurge":1}}}}'
 ```
 
-## 📚 Документация
+## Документация
 
 - [PoP Configuration](docs/pop-config.md)
 - [Inter-PoP MASQUE](docs/inter-pop-masque.md)
@@ -415,18 +415,18 @@ kubectl patch deployment relay-mow -n cloudbridge-relay -p '{"spec":{"strategy":
 - [Monitoring](docs/monitoring.md)
 - [Troubleshooting](docs/troubleshooting.md)
 
-## 🤝 Участие в разработке
+## Участие в разработке
 
 1. Fork репозитория
 2. Создайте feature branch
 3. Внесите изменения
 4. Создайте Pull Request
 
-## 📄 Лицензия
+## Лицензия
 
 MIT License - см. [LICENSE](LICENSE) файл.
 
-## 🆘 Поддержка
+## Поддержка
 
 - **Issues**: [GitHub Issues](https://github.com/twogc/cloudbridge-edge-pops/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/twogc/cloudbridge-edge-pops/discussions)
