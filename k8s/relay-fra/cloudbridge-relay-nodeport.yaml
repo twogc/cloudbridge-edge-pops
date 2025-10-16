@@ -15,12 +15,12 @@ spec:
   ports:
   - name: relay-tcp
     port: 9090
-    targetPort: 9090
+    targetPort: 5555
     protocol: TCP
     nodePort: 30990
   - name: quic-udp
     port: 9090
-    targetPort: 9090
+    targetPort: 5555
     protocol: UDP
     nodePort: 30991
   - name: wireguard-udp
@@ -30,7 +30,7 @@ spec:
     nodePort: 31820
   - name: p2p-api-tcp
     port: 8082
-    targetPort: 8082
+    targetPort: 5552
     protocol: TCP
     nodePort: 30882
   - name: grpc-tcp
