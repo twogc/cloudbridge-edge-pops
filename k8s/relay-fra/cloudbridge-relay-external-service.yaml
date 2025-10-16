@@ -32,7 +32,7 @@ spec:
     # HTTP API
     - name: http-api
       port: 5553
-      targetPort: 5556
+      targetPort: 5553
       nodePort: 30093
       protocol: TCP
     # STUN Server
@@ -61,7 +61,7 @@ spec:
       protocol: UDP
     # P2P QUIC Server
     - name: p2p-quic
-      port: 5553
+      port: 5556
       targetPort: 5556
       nodePort: 30097
       protocol: UDP
@@ -97,7 +97,7 @@ spec:
     # HTTP API
     - name: http-api
       port: 5553
-      targetPort: 5556
+      targetPort: 5553
       protocol: TCP
     # STUN Server
     - name: stun-server
@@ -121,7 +121,7 @@ spec:
       protocol: UDP
     # P2P QUIC Server
     - name: p2p-quic
-      port: 5553
+      port: 5556
       targetPort: 5556
       protocol: UDP
 

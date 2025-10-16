@@ -2,7 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: cloudbridge-relay-nodeport
-  namespace: cloudbridge
+  namespace: cloudbridge-relay
   labels:
     app.kubernetes.io/name: cloudbridge-relay
     app.kubernetes.io/component: relay
@@ -14,12 +14,12 @@ spec:
     app.kubernetes.io/component: relay
   ports:
   - name: relay-tcp
-    port: 9090
-    targetPort: 5555
+    port: 5550
+    targetPort: 5550
     protocol: TCP
     nodePort: 30990
   - name: quic-udp
-    port: 9090
+    port: 5555
     targetPort: 5555
     protocol: UDP
     nodePort: 30991
