@@ -1,3 +1,4 @@
+---
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -15,13 +16,13 @@ data:
       timeout: 30s
       retry_attempts: 3
       retry_delay: 5s
-      
+
     routing:
       algorithm: "ai_optimized"
       fallback_algorithm: "latency_based"
       max_hops: 3
       load_balancing: "weighted_round_robin"
-      
+
     learning:
       enabled: true
       metrics_collection_interval: 60s
@@ -34,7 +35,7 @@ data:
         - "latency"
         - "jitter"
         - "throughput"
-        
+
     optimization:
       objectives:
         - "minimize_latency"
@@ -46,7 +47,7 @@ data:
         min_throughput: 100Mbps
         max_cost: 1.0
         min_reliability: 0.99
-        
+
     regions:
       - name: "RU-MOW"
         endpoint: "mow.pop.cb:443"
@@ -75,7 +76,7 @@ data:
         features:
           - "high_performance"
           - "low_latency"
-          
+
     ml_model:
       type: "reinforcement_learning"
       algorithm: "PPO"
@@ -95,13 +96,13 @@ data:
         - "throughput_reward"
         - "cost_penalty"
         - "reliability_reward"
-        
+
     monitoring:
       metrics_endpoint: "/metrics"
       health_endpoint: "/health"
       status_endpoint: "/status"
       performance_endpoint: "/performance"
-      
+
     api:
       version: "v1"
       base_path: "/api/routing"
@@ -113,7 +114,7 @@ data:
         predict: "/predict"
         status: "/status"
         health: "/health"
-        
+
     security:
       authentication:
         enabled: true
@@ -135,7 +136,7 @@ data:
         enabled: true
         requests_per_second: 100
         burst_size: 200
-        
+
     logging:
       level: "info"
       format: "json"
@@ -152,14 +153,14 @@ data:
         - "stdout"
         - "file:///var/log/ai-routing/ai-routing.log"
         - "syslog://logs.2gc.ru:514"
-        
+
     cache:
       enabled: true
       type: "redis"
       endpoint: "redis:6379"
       ttl: 300s
       max_size: 1000
-      
+
     database:
       type: "postgresql"
       endpoint: "postgresql:5432"
@@ -167,7 +168,7 @@ data:
       username: "ai_routing"
       password_secret: "ai-routing-db-password"
       ssl_mode: "require"
-      
+
     external_services:
       prometheus:
         endpoint: "http://prometheus:9090"

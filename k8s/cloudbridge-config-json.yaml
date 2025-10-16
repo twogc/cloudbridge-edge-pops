@@ -1,3 +1,4 @@
+---
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -63,7 +64,7 @@ data:
             "weight": 100
           },
           {
-            "name": "EU-AMS", 
+            "name": "EU-AMS",
             "endpoint": "ams.pop.cb:443",
             "region": "EU-AMS",
             "weight": 90

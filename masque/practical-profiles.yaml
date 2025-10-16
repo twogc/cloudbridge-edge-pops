@@ -1,7 +1,6 @@
+---
 # Практичные MASQUE профили для домашних и мобильных сетей
 # CloudBridge Edge PoP - Профили оптимизации
-
----
 # Gaming Profile - максимальная производительность для игр
 apiVersion: v1
 kind: ConfigMap
@@ -31,7 +30,7 @@ data:
       max_streams_uni: 50
       pacing: true
       pacing_rate: "conservative" # Консервативный pacing
-      
+
     mtls:
       enabled: true
       ca_secret: cb-ca-bundle
@@ -39,7 +38,7 @@ data:
       crl_endpoint: "https://crl.2gc.ru/crl/interpop.crl"
       verify_peer_cert: true
       min_tls_version: "1.3"
-      
+
     masque:
       connect_udp: true
       connect_ip: true
@@ -49,7 +48,7 @@ data:
       keepalive_interval: 10s     # Частые keepalive
       max_connections_per_tenant: 100  # Меньше соединений
       fec_enabled: false          # FEC не нужен для игр
-      
+
     neighbors:
       - name: "EU-FRA"
         endpoint: "fra.pop.cb:443"
@@ -75,7 +74,7 @@ data:
         latency_threshold: 35ms
         cost_multiplier: 0.8
         gaming_optimized: true
-        
+
     routing:
       algorithm: "gaming_optimized"  # Специальный алгоритм для игр
       ai_service_url: "https://ai.2gc.ru:8083"
@@ -84,7 +83,7 @@ data:
       load_balancing: "lowest_latency"
       target_rtt: 20ms              # Целевой RTT для игр
       max_rtt: 50ms                 # Максимальный RTT
-      
+
     metrics:
       enabled: true
       port: 9091
@@ -95,7 +94,7 @@ data:
         - "neighbor"
         - "tenant"
         - "profile"
-        
+
     security:
       rate_limiting:
         enabled: true
@@ -109,7 +108,7 @@ data:
         enabled: true
         log_level: "info"
         retention_days: 7           # Меньше логов для игр
-        
+
     gaming:
       enabled: true
       dscp_marking: "CS6"          # Высший приоритет
@@ -148,7 +147,7 @@ data:
       max_streams_uni: 200
       pacing: true
       pacing_rate: "aggressive"   # Агрессивный pacing для стрима
-      
+
     mtls:
       enabled: true
       ca_secret: cb-ca-bundle
@@ -156,7 +155,7 @@ data:
       crl_endpoint: "https://crl.2gc.ru/crl/interpop.crl"
       verify_peer_cert: true
       min_tls_version: "1.3"
-      
+
     masque:
       connect_udp: true
       connect_ip: true
@@ -167,7 +166,7 @@ data:
       max_connections_per_tenant: 1000  # Больше соединений
       fec_enabled: true         # FEC нужен для стрима
       fec_overhead: 8           # 8% overhead для FEC
-      
+
     neighbors:
       - name: "EU-FRA"
         endpoint: "fra.pop.cb:443"
@@ -193,7 +192,7 @@ data:
         latency_threshold: 60ms
         cost_multiplier: 0.8
         streaming_optimized: true
-        
+
     routing:
       algorithm: "streaming_optimized"  # Специальный алгоритм для стрима
       ai_service_url: "https://ai.2gc.ru:8083"
@@ -202,7 +201,7 @@ data:
       load_balancing: "weighted_round_robin"
       target_rtt: 30ms                 # Целевой RTT для стрима
       max_rtt: 100ms                   # Максимальный RTT
-      
+
     metrics:
       enabled: true
       port: 9091
@@ -213,7 +212,7 @@ data:
         - "neighbor"
         - "tenant"
         - "profile"
-        
+
     security:
       rate_limiting:
         enabled: true
@@ -227,7 +226,7 @@ data:
         enabled: true
         log_level: "info"
         retention_days: 30             # Больше логов для стрима
-        
+
     streaming:
       enabled: true
       dscp_marking: "AF41"            # Приоритет для видео
@@ -271,7 +270,7 @@ data:
       pacing_rate: "adaptive"     # Адаптивный pacing
       mtu_discovery: true         # MTU discovery для мобильных
       mtu_size: 1350             # Меньший MTU для мобильных
-      
+
     mtls:
       enabled: true
       ca_secret: cb-ca-bundle
@@ -279,7 +278,7 @@ data:
       crl_endpoint: "https://crl.2gc.ru/crl/interpop.crl"
       verify_peer_cert: true
       min_tls_version: "1.3"
-      
+
     masque:
       connect_udp: true
       connect_ip: true
@@ -290,7 +289,7 @@ data:
       max_connections_per_tenant: 500   # Среднее количество соединений
       fec_enabled: true           # FEC нужен для мобильных
       fec_overhead: 12            # 12% overhead для FEC
-      
+
     neighbors:
       - name: "EU-FRA"
         endpoint: "fra.pop.cb:443"
@@ -316,7 +315,7 @@ data:
         latency_threshold: 55ms
         cost_multiplier: 0.8
         mobile_optimized: true
-        
+
     routing:
       algorithm: "mobile_optimized"   # Специальный алгоритм для мобильных
       ai_service_url: "https://ai.2gc.ru:8083"
@@ -325,7 +324,7 @@ data:
       load_balancing: "congestion_aware"
       target_rtt: 35ms                # Целевой RTT для мобильных
       max_rtt: 80ms                   # Максимальный RTT
-      
+
     metrics:
       enabled: true
       port: 9091
@@ -337,7 +336,7 @@ data:
         - "tenant"
         - "profile"
         - "radio_type"
-        
+
     security:
       rate_limiting:
         enabled: true
@@ -351,7 +350,7 @@ data:
         enabled: true
         log_level: "info"
         retention_days: 14            # Средние логи
-        
+
     mobile:
       enabled: true
       dscp_marking: "AF41"            # Приоритет для мобильных

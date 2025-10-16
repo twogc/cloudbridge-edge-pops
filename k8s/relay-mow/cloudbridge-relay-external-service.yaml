@@ -1,3 +1,4 @@
+---
 apiVersion: v1
 kind: Service
 metadata:
@@ -23,7 +24,7 @@ spec:
       targetPort: 5551
       nodePort: 30191
       protocol: TCP
-    # P2P API  
+    # P2P API
     - name: p2p-api
       port: 5552
       targetPort: 5552

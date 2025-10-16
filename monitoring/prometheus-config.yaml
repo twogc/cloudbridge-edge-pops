@@ -1,3 +1,4 @@
+---
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -15,20 +16,20 @@ data:
       external_labels:
         cluster: 'cloudbridge-edge-pops'
         environment: 'production'
-    
+
     rule_files:
       - "/etc/prometheus/rules/*.yml"
-    
+
     alerting:
       alertmanagers:
         - static_configs:
             - targets:
               - alertmanager:9093
-    
+
     scrape_configs:
     - job_name: 'edge-pops'
       static_configs:
-        - targets: 
+        - targets:
           - 'relay-mow:9091'
           - 'relay-fra:9091'
           - 'relay-ams:9091'
@@ -53,7 +54,7 @@ data:
           target_label: region
           regex: 'relay-(.*)'
           replacement: '${1}'
-    
+
     - job_name: 'masque-inter-pop'
       static_configs:
         - targets:
@@ -73,7 +74,7 @@ data:
         - source_labels: [__name__]
           regex: 'masque_.*'
           action: keep
-    
+
     - job_name: 'kubernetes-pods'
       kubernetes_sd_configs:
         - role: pod
@@ -129,7 +130,7 @@ data:
           summary: "RTT между PoP превысил 50ms"
           description: "RTT для региона {{ $labels.region }} составляет {{ $value }}s"
           runbook_url: "https://docs.2gc.ru/runbooks/high-rtt"
-      
+
       - alert: HandoverTimeout
         expr: relay_handover_duration_seconds > 0.3
         for: 2m
@@ -140,7 +141,7 @@ data:
           summary: "Handover превысил 300ms"
           description: "Handover для региона {{ $labels.region }} составляет {{ $value }}s"
           runbook_url: "https://docs.2gc.ru/runbooks/handover-timeout"
-      
+
       - alert: LowP2PRatio
         expr: relay_p2p_percentage < 60
         for: 10m
@@ -151,7 +152,7 @@ data:
           summary: "P2P соединения ниже 60%"
           description: "P2P процент для региона {{ $labels.region }} составляет {{ $value }}%"
           runbook_url: "https://docs.2gc.ru/runbooks/low-p2p-ratio"
-      
+
       - alert: HighErrorRate
         expr: relay_error_rate > 0.01
         for: 5m
@@ -162,7 +163,7 @@ data:
           summary: "Высокая частота ошибок"
           description: "Error rate для региона {{ $labels.region }} составляет {{ $value }}"
           runbook_url: "https://docs.2gc.ru/runbooks/high-error-rate"
-      
+
       - alert: LowThroughput
         expr: relay_throughput_bytes < 1000000000
         for: 10m
@@ -173,7 +174,7 @@ data:
           summary: "Низкая пропускная способность"
           description: "Throughput для региона {{ $labels.region }} составляет {{ $value }} bytes/s"
           runbook_url: "https://docs.2gc.ru/runbooks/low-throughput"
-      
+
       - alert: PoPDown
         expr: up{job="edge-pops"} == 0
         for: 1m
@@ -184,7 +185,7 @@ data:
           summary: "PoP узел недоступен"
           description: "PoP узел {{ $labels.instance }} недоступен"
           runbook_url: "https://docs.2gc.ru/runbooks/pop-down"
-      
+
       - alert: MASQUEContextLimit
         expr: masque_active_contexts / masque_max_contexts > 0.8
         for: 5m
@@ -195,7 +196,7 @@ data:
           summary: "MASQUE контексты близки к лимиту"
           description: "Использование MASQUE контекстов составляет {{ $value }}%"
           runbook_url: "https://docs.2gc.ru/runbooks/masque-context-limit"
-      
+
       - alert: InterPoPConnectivity
         expr: masque_neighbor_connectivity == 0
         for: 2m
@@ -223,7 +224,7 @@ data:
       smtp_from: 'alerts@2gc.ru'
       smtp_auth_username: 'alerts@2gc.ru'
       smtp_auth_password: 'smtp-password'
-    
+
     route:
       group_by: ['alertname', 'region', 'service']
       group_wait: 10s
@@ -241,13 +242,13 @@ data:
         receiver: 'warning-alerts'
         group_wait: 30s
         repeat_interval: 2h
-    
+
     receivers:
     - name: 'web.hook'
       webhook_configs:
       - url: 'http://webhook.2gc.ru/alerts'
         send_resolved: true
-    
+
     - name: 'critical-alerts'
       email_configs:
       - to: 'ops@2gc.ru'
@@ -265,7 +266,7 @@ data:
         channel: '#cloudbridge-alerts'
         title: 'CloudBridge Critical Alert'
         text: '{{ range .Alerts }}{{ .Annotations.summary }}{{ end }}'
-    
+
     - name: 'warning-alerts'
       email_configs:
       - to: 'team@2gc.ru'

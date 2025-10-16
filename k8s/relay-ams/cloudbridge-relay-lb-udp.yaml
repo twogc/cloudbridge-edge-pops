@@ -1,3 +1,4 @@
+---
 apiVersion: v1
 kind: Service
 metadata:
@@ -17,24 +18,24 @@ spec:
     app.kubernetes.io/name: cloudbridge-relay
     app.kubernetes.io/component: relay
   ports:
-      - name: quic-udp
-        port: 5555
-        targetPort: 5555
-        protocol: UDP
-      - name: p2p-quic-udp
-        port: 5556
-        targetPort: 5556
-        protocol: UDP
-      - name: enhanced-quic-udp
-        port: 9092
-        targetPort: 9092
-        protocol: UDP
-      - name: stun-server-udp
-        port: 19302
-        targetPort: 19302
-        protocol: UDP
-      - name: wireguard-udp
-        port: 51820
-        targetPort: 51820
-        protocol: UDP
+  - name: quic-udp
+    port: 5555
+    targetPort: 5555
+    protocol: UDP
+  - name: p2p-quic-udp
+    port: 5556
+    targetPort: 5556
+    protocol: UDP
+  - name: enhanced-quic-udp
+    port: 9092
+    targetPort: 9092
+    protocol: UDP
+  - name: stun-server-udp
+    port: 19302
+    targetPort: 19302
+    protocol: UDP
+  - name: wireguard-udp
+    port: 51820
+    targetPort: 51820
+    protocol: UDP
 
