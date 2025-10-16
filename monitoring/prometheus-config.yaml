@@ -1,0 +1,280 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  namespace: cloudbridge-relay
+  labels:
+    app: prometheus
+    app.kubernetes.io/name: prometheus-config
+    app.kubernetes.io/component: monitoring
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 15s
+      evaluation_interval: 15s
+      external_labels:
+        cluster: 'cloudbridge-edge-pops'
+        environment: 'production'
+    
+    rule_files:
+      - "/etc/prometheus/rules/*.yml"
+    
+    alerting:
+      alertmanagers:
+        - static_configs:
+            - targets:
+              - alertmanager:9093
+    
+    scrape_configs:
+    - job_name: 'edge-pops'
+      static_configs:
+        - targets: 
+          - 'relay-mow:9091'
+          - 'relay-fra:9091'
+          - 'relay-ams:9091'
+      relabel_configs:
+        - source_labels: [__address__]
+          regex: '(.*):(.*)'
+          target_label: region
+          replacement: "${1}"
+        - source_labels: [__address__]
+          regex: 'relay-(.*):.*'
+          target_label: pop
+          replacement: "${1}"
+        - source_labels: [__address__]
+          regex: '(.*):(.*)'
+          target_label: instance
+          replacement: "${1}:${2}"
+      metric_relabel_configs:
+        - source_labels: [__name__]
+          regex: 'relay_.*'
+          action: keep
+        - source_labels: [region]
+          target_label: region
+          regex: 'relay-(.*)'
+          replacement: '${1}'
+    
+    - job_name: 'masque-inter-pop'
+      static_configs:
+        - targets:
+          - 'masque-mow:9091'
+          - 'masque-fra:9091'
+          - 'masque-ams:9091'
+      relabel_configs:
+        - source_labels: [__address__]
+          regex: 'masque-(.*):(.*)'
+          target_label: region
+          replacement: "${1}"
+        - source_labels: [__address__]
+          regex: '(.*):(.*)'
+          target_label: instance
+          replacement: "${1}:${2}"
+      metric_relabel_configs:
+        - source_labels: [__name__]
+          regex: 'masque_.*'
+          action: keep
+    
+    - job_name: 'kubernetes-pods'
+      kubernetes_sd_configs:
+        - role: pod
+          namespaces:
+            names:
+              - cloudbridge-relay
+      relabel_configs:
+        - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+          action: keep
+          regex: true
+        - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+          action: replace
+          target_label: __metrics_path__
+          regex: (.+)
+        - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+          action: replace
+          regex: ([^:]+)(?::\d+)?;(\d+)
+          replacement: $1:$2
+          target_label: __address__
+        - action: labelmap
+          regex: __meta_kubernetes_pod_label_(.+)
+        - source_labels: [__meta_kubernetes_namespace]
+          action: replace
+          target_label: kubernetes_namespace
+        - source_labels: [__meta_kubernetes_pod_name]
+          action: replace
+          target_label: kubernetes_pod_name
+        - source_labels: [__meta_kubernetes_pod_node_name]
+          action: replace
+          target_label: kubernetes_node
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-rules
+  namespace: cloudbridge-relay
+  labels:
+    app: prometheus
+    app.kubernetes.io/name: prometheus-rules
+    app.kubernetes.io/component: monitoring
+data:
+  edge-pops-alerts.yml: |
+    groups:
+    - name: edge-pops-alerts
+      rules:
+      - alert: HighRTT
+        expr: relay_rtt_seconds{region=~"mow|fra|ams"} > 0.05
+        for: 5m
+        labels:
+          severity: warning
+          service: edge-pops
+        annotations:
+          summary: "RTT между PoP превысил 50ms"
+          description: "RTT для региона {{ $labels.region }} составляет {{ $value }}s"
+          runbook_url: "https://docs.2gc.ru/runbooks/high-rtt"
+      
+      - alert: HandoverTimeout
+        expr: relay_handover_duration_seconds > 0.3
+        for: 2m
+        labels:
+          severity: critical
+          service: edge-pops
+        annotations:
+          summary: "Handover превысил 300ms"
+          description: "Handover для региона {{ $labels.region }} составляет {{ $value }}s"
+          runbook_url: "https://docs.2gc.ru/runbooks/handover-timeout"
+      
+      - alert: LowP2PRatio
+        expr: relay_p2p_percentage < 60
+        for: 10m
+        labels:
+          severity: warning
+          service: edge-pops
+        annotations:
+          summary: "P2P соединения ниже 60%"
+          description: "P2P процент для региона {{ $labels.region }} составляет {{ $value }}%"
+          runbook_url: "https://docs.2gc.ru/runbooks/low-p2p-ratio"
+      
+      - alert: HighErrorRate
+        expr: relay_error_rate > 0.01
+        for: 5m
+        labels:
+          severity: critical
+          service: edge-pops
+        annotations:
+          summary: "Высокая частота ошибок"
+          description: "Error rate для региона {{ $labels.region }} составляет {{ $value }}"
+          runbook_url: "https://docs.2gc.ru/runbooks/high-error-rate"
+      
+      - alert: LowThroughput
+        expr: relay_throughput_bytes < 1000000000
+        for: 10m
+        labels:
+          severity: warning
+          service: edge-pops
+        annotations:
+          summary: "Низкая пропускная способность"
+          description: "Throughput для региона {{ $labels.region }} составляет {{ $value }} bytes/s"
+          runbook_url: "https://docs.2gc.ru/runbooks/low-throughput"
+      
+      - alert: PoPDown
+        expr: up{job="edge-pops"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: edge-pops
+        annotations:
+          summary: "PoP узел недоступен"
+          description: "PoP узел {{ $labels.instance }} недоступен"
+          runbook_url: "https://docs.2gc.ru/runbooks/pop-down"
+      
+      - alert: MASQUEContextLimit
+        expr: masque_active_contexts / masque_max_contexts > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          service: masque
+        annotations:
+          summary: "MASQUE контексты близки к лимиту"
+          description: "Использование MASQUE контекстов составляет {{ $value }}%"
+          runbook_url: "https://docs.2gc.ru/runbooks/masque-context-limit"
+      
+      - alert: InterPoPConnectivity
+        expr: masque_neighbor_connectivity == 0
+        for: 2m
+        labels:
+          severity: critical
+          service: masque
+        annotations:
+          summary: "Inter-PoP связность нарушена"
+          description: "Связность с соседом {{ $labels.neighbor }} нарушена"
+          runbook_url: "https://docs.2gc.ru/runbooks/inter-pop-connectivity"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: alertmanager-config
+  namespace: cloudbridge-relay
+  labels:
+    app: alertmanager
+    app.kubernetes.io/name: alertmanager-config
+    app.kubernetes.io/component: monitoring
+data:
+  alertmanager.yml: |
+    global:
+      smtp_smarthost: 'smtp.2gc.ru:587'
+      smtp_from: 'alerts@2gc.ru'
+      smtp_auth_username: 'alerts@2gc.ru'
+      smtp_auth_password: 'smtp-password'
+    
+    route:
+      group_by: ['alertname', 'region', 'service']
+      group_wait: 10s
+      group_interval: 10s
+      repeat_interval: 1h
+      receiver: 'web.hook'
+      routes:
+      - match:
+          severity: critical
+        receiver: 'critical-alerts'
+        group_wait: 5s
+        repeat_interval: 30m
+      - match:
+          severity: warning
+        receiver: 'warning-alerts'
+        group_wait: 30s
+        repeat_interval: 2h
+    
+    receivers:
+    - name: 'web.hook'
+      webhook_configs:
+      - url: 'http://webhook.2gc.ru/alerts'
+        send_resolved: true
+    
+    - name: 'critical-alerts'
+      email_configs:
+      - to: 'ops@2gc.ru'
+        subject: '[CRITICAL] CloudBridge Edge PoP Alert'
+        body: |
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Region: {{ .Labels.region }}
+          Service: {{ .Labels.service }}
+          Runbook: {{ .Annotations.runbook_url }}
+          {{ end }}
+      slack_configs:
+      - api_url: 'https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX'
+        channel: '#cloudbridge-alerts'
+        title: 'CloudBridge Critical Alert'
+        text: '{{ range .Alerts }}{{ .Annotations.summary }}{{ end }}'
+    
+    - name: 'warning-alerts'
+      email_configs:
+      - to: 'team@2gc.ru'
+        subject: '[WARNING] CloudBridge Edge PoP Alert'
+        body: |
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Region: {{ .Labels.region }}
+          Service: {{ .Labels.service }}
+          {{ end }}
+

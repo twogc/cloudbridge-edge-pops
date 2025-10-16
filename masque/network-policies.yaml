@@ -1,0 +1,178 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: relay-network-policy
+  namespace: cloudbridge-relay
+  labels:
+    app: relay
+    app.kubernetes.io/name: relay-network-policy
+    app.kubernetes.io/component: security
+spec:
+  podSelector:
+    matchLabels:
+      app: cloudbridge-relay
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: cloudbridge-control
+    - podSelector:
+        matchLabels:
+          app: cloudbridge-relay
+    ports:
+    - protocol: UDP
+      port: 443
+    - protocol: UDP
+      port: 9090
+    - protocol: UDP
+      port: 9092
+    - protocol: UDP
+      port: 51820
+    - protocol: UDP
+      port: 3478
+    - protocol: UDP
+      port: 19302
+    - protocol: TCP
+      port: 5550
+    - protocol: TCP
+      port: 5551
+    - protocol: TCP
+      port: 5552
+    - protocol: TCP
+      port: 5553
+    - protocol: TCP
+      port: 5554
+    - protocol: TCP
+      port: 8443
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: cloudbridge-control
+    - podSelector:
+        matchLabels:
+          app: cloudbridge-relay
+    ports:
+    - protocol: UDP
+      port: 443
+    - protocol: UDP
+      port: 9090
+    - protocol: UDP
+      port: 9092
+    - protocol: UDP
+      port: 51820
+    - protocol: UDP
+      port: 3478
+    - protocol: UDP
+      port: 19302
+    - protocol: TCP
+      port: 5550
+    - protocol: TCP
+      port: 5551
+    - protocol: TCP
+      port: 5552
+    - protocol: TCP
+      port: 5553
+    - protocol: TCP
+      port: 5554
+    - protocol: TCP
+      port: 8443
+  - to: []
+    ports:
+    - protocol: TCP
+      port: 53
+    - protocol: UDP
+      port: 53
+    - protocol: TCP
+      port: 443
+    - protocol: TCP
+      port: 80
+---
+apiVersion: projectcalico.org/v3
+kind: GlobalNetworkPolicy
+metadata:
+  name: inter-pop-allow
+  labels:
+    app: relay
+    app.kubernetes.io/name: inter-pop-policy
+    app.kubernetes.io/component: security
+spec:
+  selector: app == 'cloudbridge-relay'
+  order: 100
+  egress:
+  - action: Allow
+    protocol: UDP
+    destination:
+      ports: [443, 9090, 9092, 51820, 3478, 19302]
+    source:
+      selector: app == 'cloudbridge-relay'
+  - action: Allow
+    protocol: TCP
+    destination:
+      ports: [5550, 5551, 5552, 5553, 5554, 8443]
+    source:
+      selector: app == 'cloudbridge-relay'
+  - action: Allow
+    protocol: TCP
+    destination:
+      ports: [53, 443, 80]
+  - action: Allow
+    protocol: UDP
+    destination:
+      ports: [53]
+  ingress:
+  - action: Allow
+    protocol: UDP
+    source:
+      selector: app == 'cloudbridge-relay'
+    destination:
+      ports: [443, 9090, 9092, 51820, 3478, 19302]
+  - action: Allow
+    protocol: TCP
+    source:
+      selector: app == 'cloudbridge-relay'
+    destination:
+      ports: [5550, 5551, 5552, 5553, 5554, 8443]
+  - action: Allow
+    protocol: TCP
+    source:
+      selector: app == 'cloudbridge-control'
+    destination:
+      ports: [5550, 5551, 5552, 5553, 5554, 8443]
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: tenant-isolation
+  namespace: cloudbridge-relay
+  labels:
+    app: relay
+    app.kubernetes.io/name: tenant-isolation
+    app.kubernetes.io/component: security
+spec:
+  podSelector:
+    matchLabels:
+      app: cloudbridge-relay
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: cloudbridge-control
+    - podSelector:
+        matchLabels:
+          app: cloudbridge-relay
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: cloudbridge-control
+    - podSelector:
+        matchLabels:
+          app: cloudbridge-relay
+

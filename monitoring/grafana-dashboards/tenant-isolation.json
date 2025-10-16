@@ -1,0 +1,407 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "Tenant Isolation",
+    "tags": ["cloudbridge", "tenant", "isolation", "security"],
+    "style": "dark",
+    "timezone": "browser",
+    "refresh": "30s",
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "panels": [
+      {
+        "id": 1,
+        "title": "Tenant Connections",
+        "type": "graph",
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 0
+        },
+        "targets": [
+          {
+            "expr": "tenant_connections_total",
+            "legendFormat": "{{tenant}} Connections",
+            "refId": "A"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "Connections",
+            "min": 0
+          },
+          {
+            "show": false
+          }
+        ],
+        "xAxis": {
+          "show": true
+        },
+        "legend": {
+          "show": true,
+          "values": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "avg": false
+        }
+      },
+      {
+        "id": 2,
+        "title": "Tenant Bandwidth",
+        "type": "graph",
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 0
+        },
+        "targets": [
+          {
+            "expr": "tenant_bandwidth_bytes",
+            "legendFormat": "{{tenant}} Bandwidth",
+            "refId": "A"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "Bandwidth (bytes/sec)",
+            "min": 0
+          },
+          {
+            "show": false
+          }
+        ],
+        "xAxis": {
+          "show": true
+        },
+        "legend": {
+          "show": true,
+          "values": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "avg": false
+        }
+      },
+      {
+        "id": 3,
+        "title": "Tenant Error Rate",
+        "type": "graph",
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 8
+        },
+        "targets": [
+          {
+            "expr": "tenant_errors_total",
+            "legendFormat": "{{tenant}} Errors",
+            "refId": "A"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "Errors",
+            "min": 0
+          },
+          {
+            "show": false
+          }
+        ],
+        "xAxis": {
+          "show": true
+        },
+        "legend": {
+          "show": true,
+          "values": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "avg": false
+        },
+        "thresholds": [
+          {
+            "value": 10,
+            "colorMode": "critical",
+            "op": "gt",
+            "fill": true,
+            "line": true
+          },
+          {
+            "value": 5,
+            "colorMode": "warning",
+            "op": "gt",
+            "fill": true,
+            "line": true
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "title": "Tenant Resource Usage",
+        "type": "graph",
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 8
+        },
+        "targets": [
+          {
+            "expr": "tenant_resource_usage",
+            "legendFormat": "{{tenant}} {{resource_type}} Usage",
+            "refId": "A"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "Resource Usage",
+            "min": 0
+          },
+          {
+            "show": false
+          }
+        ],
+        "xAxis": {
+          "show": true
+        },
+        "legend": {
+          "show": true,
+          "values": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "avg": false
+        }
+      },
+      {
+        "id": 5,
+        "title": "Network Policy Violations",
+        "type": "graph",
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 16
+        },
+        "targets": [
+          {
+            "expr": "network_policy_violations_total",
+            "legendFormat": "{{tenant}} Violations",
+            "refId": "A"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "Violations",
+            "min": 0
+          },
+          {
+            "show": false
+          }
+        ],
+        "xAxis": {
+          "show": true
+        },
+        "legend": {
+          "show": true,
+          "values": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "avg": false
+        },
+        "thresholds": [
+          {
+            "value": 1,
+            "colorMode": "critical",
+            "op": "gt",
+            "fill": true,
+            "line": true
+          }
+        ]
+      },
+      {
+        "id": 6,
+        "title": "Tenant Isolation Status",
+        "type": "stat",
+        "gridPos": {
+          "h": 4,
+          "w": 6,
+          "x": 12,
+          "y": 16
+        },
+        "targets": [
+          {
+            "expr": "tenant_isolation_enabled",
+            "legendFormat": "{{tenant}} Isolation",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "min": 0,
+            "max": 1,
+            "thresholds": {
+              "steps": [
+                {
+                  "color": "red",
+                  "value": 0
+                },
+                {
+                  "color": "green",
+                  "value": 1
+                }
+              ]
+            }
+          }
+        },
+        "options": {
+          "colorMode": "value",
+          "graphMode": "area",
+          "justifyMode": "auto",
+          "orientation": "auto"
+        }
+      },
+      {
+        "id": 7,
+        "title": "VRF Status",
+        "type": "stat",
+        "gridPos": {
+          "h": 4,
+          "w": 6,
+          "x": 18,
+          "y": 16
+        },
+        "targets": [
+          {
+            "expr": "vrf_enabled",
+            "legendFormat": "{{tenant}} VRF",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "min": 0,
+            "max": 1,
+            "thresholds": {
+              "steps": [
+                {
+                  "color": "red",
+                  "value": 0
+                },
+                {
+                  "color": "green",
+                  "value": 1
+                }
+              ]
+            }
+          }
+        },
+        "options": {
+          "colorMode": "value",
+          "graphMode": "area",
+          "justifyMode": "auto",
+          "orientation": "auto"
+        }
+      },
+      {
+        "id": 8,
+        "title": "Tenant Context Separation",
+        "type": "graph",
+        "gridPos": {
+          "h": 8,
+          "w": 24,
+          "x": 0,
+          "y": 20
+        },
+        "targets": [
+          {
+            "expr": "tenant_contexts_active",
+            "legendFormat": "{{tenant}} Active Contexts",
+            "refId": "A"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "Active Contexts",
+            "min": 0
+          },
+          {
+            "show": false
+          }
+        ],
+        "xAxis": {
+          "show": true
+        },
+        "legend": {
+          "show": true,
+          "values": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "avg": false
+        }
+      }
+    ],
+    "templating": {
+      "list": [
+        {
+          "name": "tenant",
+          "type": "query",
+          "query": "label_values(tenant_connections_total, tenant)",
+          "refresh": 1,
+          "includeAll": true,
+          "multi": true,
+          "allValue": ".*"
+        },
+        {
+          "name": "resource_type",
+          "type": "query",
+          "query": "label_values(tenant_resource_usage, resource_type)",
+          "refresh": 1,
+          "includeAll": true,
+          "multi": true,
+          "allValue": ".*"
+        }
+      ]
+    },
+    "annotations": {
+      "list": [
+        {
+          "name": "Tenant Alerts",
+          "datasource": "Prometheus",
+          "expr": "ALERTS{alertname=~\"Tenant.*\"}",
+          "enable": true,
+          "iconColor": "red"
+        },
+        {
+          "name": "Isolation Violations",
+          "datasource": "Prometheus",
+          "expr": "network_policy_violations_total > 0",
+          "enable": true,
+          "iconColor": "orange"
+        }
+      ]
+    },
+    "links": [
+      {
+        "title": "Prometheus",
+        "url": "http://prometheus:9090",
+        "type": "link"
+      },
+      {
+        "title": "Alertmanager",
+        "url": "http://alertmanager:9093",
+        "type": "link"
+      }
+    ]
+  }
+}

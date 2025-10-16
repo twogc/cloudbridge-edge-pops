@@ -1,0 +1,470 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "Edge PoP Overview",
+    "tags": ["cloudbridge", "edge-pops", "monitoring"],
+    "style": "dark",
+    "timezone": "browser",
+    "refresh": "30s",
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "panels": [
+      {
+        "id": 1,
+        "title": "Inter-PoP RTT",
+        "type": "graph",
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 0
+        },
+        "targets": [
+          {
+            "expr": "relay_rtt_seconds{region=~\"mow|fra|ams\"}",
+            "legendFormat": "{{region}} RTT",
+            "refId": "A"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "RTT (seconds)",
+            "max": 0.1,
+            "min": 0
+          },
+          {
+            "show": false
+          }
+        ],
+        "xAxis": {
+          "show": true
+        },
+        "legend": {
+          "show": true,
+          "values": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "avg": false
+        },
+        "thresholds": [
+          {
+            "value": 0.05,
+            "colorMode": "critical",
+            "op": "gt",
+            "fill": true,
+            "line": true
+          },
+          {
+            "value": 0.03,
+            "colorMode": "warning",
+            "op": "gt",
+            "fill": true,
+            "line": true
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "title": "Handover Performance",
+        "type": "graph",
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 0
+        },
+        "targets": [
+          {
+            "expr": "relay_handover_duration_seconds",
+            "legendFormat": "{{region}} Handover Duration",
+            "refId": "A"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "Duration (seconds)",
+            "max": 0.5,
+            "min": 0
+          },
+          {
+            "show": false
+          }
+        ],
+        "xAxis": {
+          "show": true
+        },
+        "legend": {
+          "show": true,
+          "values": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "avg": false
+        },
+        "thresholds": [
+          {
+            "value": 0.3,
+            "colorMode": "critical",
+            "op": "gt",
+            "fill": true,
+            "line": true
+          },
+          {
+            "value": 0.2,
+            "colorMode": "warning",
+            "op": "gt",
+            "fill": true,
+            "line": true
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "title": "P2P vs Relay Ratio",
+        "type": "stat",
+        "gridPos": {
+          "h": 4,
+          "w": 6,
+          "x": 0,
+          "y": 8
+        },
+        "targets": [
+          {
+            "expr": "relay_p2p_percentage",
+            "legendFormat": "{{region}} P2P %",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "min": 0,
+            "max": 100,
+            "thresholds": {
+              "steps": [
+                {
+                  "color": "red",
+                  "value": 0
+                },
+                {
+                  "color": "yellow",
+                  "value": 60
+                },
+                {
+                  "color": "green",
+                  "value": 80
+                }
+              ]
+            }
+          }
+        },
+        "options": {
+          "colorMode": "value",
+          "graphMode": "area",
+          "justifyMode": "auto",
+          "orientation": "auto"
+        }
+      },
+      {
+        "id": 4,
+        "title": "Error Rate",
+        "type": "stat",
+        "gridPos": {
+          "h": 4,
+          "w": 6,
+          "x": 6,
+          "y": 8
+        },
+        "targets": [
+          {
+            "expr": "relay_error_rate",
+            "legendFormat": "{{region}} Error Rate",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "min": 0,
+            "max": 10,
+            "thresholds": {
+              "steps": [
+                {
+                  "color": "green",
+                  "value": 0
+                },
+                {
+                  "color": "yellow",
+                  "value": 1
+                },
+                {
+                  "color": "red",
+                  "value": 5
+                }
+              ]
+            }
+          }
+        },
+        "options": {
+          "colorMode": "value",
+          "graphMode": "area",
+          "justifyMode": "auto",
+          "orientation": "auto"
+        }
+      },
+      {
+        "id": 5,
+        "title": "Throughput",
+        "type": "stat",
+        "gridPos": {
+          "h": 4,
+          "w": 6,
+          "x": 12,
+          "y": 8
+        },
+        "targets": [
+          {
+            "expr": "relay_throughput_bytes",
+            "legendFormat": "{{region}} Throughput",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "binBps",
+            "min": 0,
+            "thresholds": {
+              "steps": [
+                {
+                  "color": "red",
+                  "value": 0
+                },
+                {
+                  "color": "yellow",
+                  "value": 1000000000
+                },
+                {
+                  "color": "green",
+                  "value": 2000000000
+                }
+              ]
+            }
+          }
+        },
+        "options": {
+          "colorMode": "value",
+          "graphMode": "area",
+          "justifyMode": "auto",
+          "orientation": "auto"
+        }
+      },
+      {
+        "id": 6,
+        "title": "PoP Status",
+        "type": "stat",
+        "gridPos": {
+          "h": 4,
+          "w": 6,
+          "x": 18,
+          "y": 8
+        },
+        "targets": [
+          {
+            "expr": "up{job=\"edge-pops\"}",
+            "legendFormat": "{{instance}} Status",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "min": 0,
+            "max": 1,
+            "thresholds": {
+              "steps": [
+                {
+                  "color": "red",
+                  "value": 0
+                },
+                {
+                  "color": "green",
+                  "value": 1
+                }
+              ]
+            }
+          }
+        },
+        "options": {
+          "colorMode": "value",
+          "graphMode": "area",
+          "justifyMode": "auto",
+          "orientation": "auto"
+        }
+      },
+      {
+        "id": 7,
+        "title": "CPU Usage",
+        "type": "graph",
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 12
+        },
+        "targets": [
+          {
+            "expr": "rate(container_cpu_usage_seconds_total{pod=~\"relay-.*\"}[5m]) * 100",
+            "legendFormat": "{{pod}} CPU %",
+            "refId": "A"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "CPU %",
+            "max": 100,
+            "min": 0
+          },
+          {
+            "show": false
+          }
+        ],
+        "xAxis": {
+          "show": true
+        },
+        "legend": {
+          "show": true,
+          "values": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "avg": false
+        },
+        "thresholds": [
+          {
+            "value": 80,
+            "colorMode": "critical",
+            "op": "gt",
+            "fill": true,
+            "line": true
+          },
+          {
+            "value": 60,
+            "colorMode": "warning",
+            "op": "gt",
+            "fill": true,
+            "line": true
+          }
+        ]
+      },
+      {
+        "id": 8,
+        "title": "Memory Usage",
+        "type": "graph",
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 12
+        },
+        "targets": [
+          {
+            "expr": "container_memory_usage_bytes{pod=~\"relay-.*\"} / 1024 / 1024",
+            "legendFormat": "{{pod}} Memory MB",
+            "refId": "A"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "Memory (MB)",
+            "min": 0
+          },
+          {
+            "show": false
+          }
+        ],
+        "xAxis": {
+          "show": true
+        },
+        "legend": {
+          "show": true,
+          "values": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "avg": false
+        },
+        "thresholds": [
+          {
+            "value": 512,
+            "colorMode": "critical",
+            "op": "gt",
+            "fill": true,
+            "line": true
+          },
+          {
+            "value": 256,
+            "colorMode": "warning",
+            "op": "gt",
+            "fill": true,
+            "line": true
+          }
+        ]
+      }
+    ],
+    "templating": {
+      "list": [
+        {
+          "name": "region",
+          "type": "query",
+          "query": "label_values(up{job=\"edge-pops\"}, region)",
+          "refresh": 1,
+          "includeAll": true,
+          "multi": true,
+          "allValue": ".*"
+        },
+        {
+          "name": "instance",
+          "type": "query",
+          "query": "label_values(up{job=\"edge-pops\"}, instance)",
+          "refresh": 1,
+          "includeAll": true,
+          "multi": true,
+          "allValue": ".*"
+        }
+      ]
+    },
+    "annotations": {
+      "list": [
+        {
+          "name": "Deployments",
+          "datasource": "Prometheus",
+          "expr": "kube_deployment_status_replicas_available{namespace=\"cloudbridge-relay\"}",
+          "enable": true,
+          "iconColor": "blue"
+        },
+        {
+          "name": "Alerts",
+          "datasource": "Prometheus",
+          "expr": "ALERTS{alertstate=\"firing\"}",
+          "enable": true,
+          "iconColor": "red"
+        }
+      ]
+    },
+    "links": [
+      {
+        "title": "Prometheus",
+        "url": "http://prometheus:9090",
+        "type": "link"
+      },
+      {
+        "title": "Alertmanager",
+        "url": "http://alertmanager:9093",
+        "type": "link"
+      }
+    ]
+  }
+}

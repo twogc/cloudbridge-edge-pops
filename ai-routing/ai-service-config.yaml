@@ -1,0 +1,378 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ai-routing-config
+  namespace: cloudbridge-control
+  labels:
+    app: ai-service
+    app.kubernetes.io/name: ai-routing-config
+    app.kubernetes.io/component: ai-routing
+data:
+  ai-routing.yaml: |
+    ai_service:
+      enabled: true
+      endpoint: "https://ai.2gc.ru:8083"
+      timeout: 30s
+      retry_attempts: 3
+      retry_delay: 5s
+      
+    routing:
+      algorithm: "ai_optimized"
+      fallback_algorithm: "latency_based"
+      max_hops: 3
+      load_balancing: "weighted_round_robin"
+      
+    learning:
+      enabled: true
+      metrics_collection_interval: 60s
+      model_update_interval: 300s
+      features:
+        - "rtt"
+        - "packet_loss"
+        - "bandwidth"
+        - "cost"
+        - "latency"
+        - "jitter"
+        - "throughput"
+        
+    optimization:
+      objectives:
+        - "minimize_latency"
+        - "maximize_throughput"
+        - "minimize_cost"
+        - "maximize_reliability"
+      constraints:
+        max_latency: 100ms
+        min_throughput: 100Mbps
+        max_cost: 1.0
+        min_reliability: 0.99
+        
+    regions:
+      - name: "RU-MOW"
+        endpoint: "mow.pop.cb:443"
+        weight: 80
+        priority: 3
+        latency_threshold: 60ms
+        cost_multiplier: 0.8
+        features:
+          - "low_cost"
+          - "high_latency"
+      - name: "EU-FRA"
+        endpoint: "fra.pop.cb:443"
+        weight: 100
+        priority: 1
+        latency_threshold: 50ms
+        cost_multiplier: 1.0
+        features:
+          - "balanced"
+          - "central"
+      - name: "EU-AMS"
+        endpoint: "ams.pop.cb:443"
+        weight: 90
+        priority: 2
+        latency_threshold: 45ms
+        cost_multiplier: 1.1
+        features:
+          - "high_performance"
+          - "low_latency"
+          
+    ml_model:
+      type: "reinforcement_learning"
+      algorithm: "PPO"
+      state_space:
+        - "current_rtt"
+        - "packet_loss_rate"
+        - "available_bandwidth"
+        - "region_capacity"
+        - "time_of_day"
+        - "day_of_week"
+      action_space:
+        - "route_selection"
+        - "load_balancing"
+        - "traffic_shaping"
+      reward_function:
+        - "latency_reward"
+        - "throughput_reward"
+        - "cost_penalty"
+        - "reliability_reward"
+        
+    monitoring:
+      metrics_endpoint: "/metrics"
+      health_endpoint: "/health"
+      status_endpoint: "/status"
+      performance_endpoint: "/performance"
+      
+    api:
+      version: "v1"
+      base_path: "/api/routing"
+      endpoints:
+        test_connectivity: "/test-connectivity"
+        get_routes: "/routes"
+        optimize_route: "/optimize"
+        learn: "/learn"
+        predict: "/predict"
+        status: "/status"
+        health: "/health"
+        
+    security:
+      authentication:
+        enabled: true
+        method: "jwt"
+        token_header: "Authorization"
+        token_format: "Bearer <token>"
+      authorization:
+        enabled: true
+        rbac:
+          enabled: true
+          rules:
+            - resource: "routing"
+              actions: ["read", "write", "admin"]
+              conditions:
+                - field: "tenant_id"
+                  operator: "in"
+                  values: ["*"]
+      rate_limiting:
+        enabled: true
+        requests_per_second: 100
+        burst_size: 200
+        
+    logging:
+      level: "info"
+      format: "json"
+      fields:
+        - "timestamp"
+        - "level"
+        - "message"
+        - "tenant_id"
+        - "region"
+        - "action"
+        - "duration"
+        - "status"
+      destinations:
+        - "stdout"
+        - "file:///var/log/ai-routing/ai-routing.log"
+        - "syslog://logs.2gc.ru:514"
+        
+    cache:
+      enabled: true
+      type: "redis"
+      endpoint: "redis:6379"
+      ttl: 300s
+      max_size: 1000
+      
+    database:
+      type: "postgresql"
+      endpoint: "postgresql:5432"
+      database: "ai_routing"
+      username: "ai_routing"
+      password_secret: "ai-routing-db-password"
+      ssl_mode: "require"
+      
+    external_services:
+      prometheus:
+        endpoint: "http://prometheus:9090"
+        metrics_path: "/api/v1/query"
+      grafana:
+        endpoint: "http://grafana:3000"
+        api_path: "/api"
+      alertmanager:
+        endpoint: "http://alertmanager:9093"
+        api_path: "/api/v1"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: ai-routing-db-password
+  namespace: cloudbridge-control
+  labels:
+    app: ai-service
+    app.kubernetes.io/name: ai-routing-db-password
+    app.kubernetes.io/component: ai-routing
+type: Opaque
+data:
+  password: <base64-encoded-password>
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ai-service
+  namespace: cloudbridge-control
+  labels:
+    app: ai-service
+    app.kubernetes.io/name: ai-service
+    app.kubernetes.io/component: ai-routing
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ai-service
+  template:
+    metadata:
+      labels:
+        app: ai-service
+        app.kubernetes.io/name: ai-service
+        app.kubernetes.io/component: ai-routing
+    spec:
+      containers:
+      - name: ai-service
+        image: cloudbridge/ai-service:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8083
+          name: http
+          protocol: TCP
+        - containerPort: 8084
+          name: metrics
+          protocol: TCP
+        env:
+        - name: AI_SERVICE_CONFIG
+          value: "/app/configs/ai-routing.yaml"
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: ai-routing-db-password
+              key: password
+        - name: REDIS_URL
+          value: "redis://redis:6379"
+        - name: PROMETHEUS_URL
+          value: "http://prometheus:9090"
+        - name: GRAFANA_URL
+          value: "http://grafana:3000"
+        - name: ALERTMANAGER_URL
+          value: "http://alertmanager:9093"
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8083
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8083
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        volumeMounts:
+        - name: config
+          mountPath: /app/configs
+          readOnly: true
+        - name: logs
+          mountPath: /var/log/ai-routing
+      volumes:
+      - name: config
+        configMap:
+          name: ai-routing-config
+      - name: logs
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ai-service
+  namespace: cloudbridge-control
+  labels:
+    app: ai-service
+    app.kubernetes.io/name: ai-service
+    app.kubernetes.io/component: ai-routing
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 8083
+    targetPort: 8083
+    protocol: TCP
+  - name: metrics
+    port: 8084
+    targetPort: 8084
+    protocol: TCP
+  selector:
+    app: ai-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ai-service-external
+  namespace: cloudbridge-control
+  labels:
+    app: ai-service
+    app.kubernetes.io/name: ai-service-external
+    app.kubernetes.io/component: ai-routing
+spec:
+  type: LoadBalancer
+  ports:
+  - name: http
+    port: 8083
+    targetPort: 8083
+    protocol: TCP
+  selector:
+    app: ai-service
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ai-service-network-policy
+  namespace: cloudbridge-control
+  labels:
+    app: ai-service
+    app.kubernetes.io/name: ai-service-network-policy
+    app.kubernetes.io/component: ai-routing
+spec:
+  podSelector:
+    matchLabels:
+      app: ai-service
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: cloudbridge-relay
+    - podSelector:
+        matchLabels:
+          app: ai-service
+    ports:
+    - protocol: TCP
+      port: 8083
+    - protocol: TCP
+      port: 8084
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: cloudbridge-relay
+    - podSelector:
+        matchLabels:
+          app: ai-service
+    ports:
+    - protocol: TCP
+      port: 8083
+    - protocol: TCP
+      port: 8084
+  - to: []
+    ports:
+    - protocol: TCP
+      port: 53
+    - protocol: UDP
+      port: 53
+    - protocol: TCP
+      port: 443
+    - protocol: TCP
+      port: 80
+    - protocol: TCP
+      port: 5432
+    - protocol: TCP
+      port: 6379
+    - protocol: TCP
+      port: 9090
+    - protocol: TCP
+      port: 3000
+    - protocol: TCP
+      port: 9093

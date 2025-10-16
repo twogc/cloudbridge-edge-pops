@@ -1,0 +1,598 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cert-manager
+  labels:
+    name: cert-manager
+    app.kubernetes.io/name: cert-manager
+    app.kubernetes.io/component: cert-manager
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cert-manager
+  namespace: cert-manager
+  labels:
+    app.kubernetes.io/name: cert-manager
+    app.kubernetes.io/component: cert-manager
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: cert-manager-controller
+  labels:
+    app.kubernetes.io/name: cert-manager
+    app.kubernetes.io/component: cert-manager
+rules:
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+- apiGroups: [""]
+  resources: ["events"]
+  verbs: ["create", "patch"]
+- apiGroups: ["cert-manager.io"]
+  resources: ["certificates", "certificaterequests", "issuers", "clusterissuers"]
+  verbs: ["get", "list", "watch", "update"]
+- apiGroups: ["cert-manager.io"]
+  resources: ["certificates/status", "certificaterequests/status", "issuers/status", "clusterissuers/status"]
+  verbs: ["update"]
+- apiGroups: ["cert-manager.io"]
+  resources: ["certificates/finalizers", "certificaterequests/finalizers", "issuers/finalizers", "clusterissuers/finalizers"]
+  verbs: ["update"]
+- apiGroups: ["acme.cert-manager.io"]
+  resources: ["challenges", "orders"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+- apiGroups: ["acme.cert-manager.io"]
+  resources: ["challenges/status", "orders/status"]
+  verbs: ["update"]
+- apiGroups: ["acme.cert-manager.io"]
+  resources: ["challenges/finalizers", "orders/finalizers"]
+  verbs: ["update"]
+- apiGroups: ["networking.k8s.io"]
+  resources: ["ingresses"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["networking.k8s.io"]
+  resources: ["ingresses/finalizers"]
+  verbs: ["update"]
+- apiGroups: ["route.openshift.io"]
+  resources: ["routes/custom-host"]
+  verbs: ["create"]
+- apiGroups: ["route.openshift.io"]
+  resources: ["routes/custom-host/finalizers"]
+  verbs: ["update"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: cert-manager-controller
+  labels:
+    app.kubernetes.io/name: cert-manager
+    app.kubernetes.io/component: cert-manager
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cert-manager-controller
+subjects:
+- name: cert-manager
+  namespace: cert-manager
+  kind: ServiceAccount
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: cert-manager-cainjector
+  labels:
+    app.kubernetes.io/name: cert-manager
+    app.kubernetes.io/component: cainjector
+rules:
+- apiGroups: ["cert-manager.io"]
+  resources: ["certificates"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["cert-manager.io"]
+  resources: ["certificates/status"]
+  verbs: ["update"]
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: [""]
+  resources: ["events"]
+  verbs: ["create", "patch"]
+- apiGroups: ["admissionregistration.k8s.io"]
+  resources: ["validatingwebhookconfigurations", "mutatingwebhookconfigurations"]
+  verbs: ["get", "list", "watch", "update"]
+- apiGroups: ["apiregistration.k8s.io"]
+  resources: ["apiservices"]
+  verbs: ["get", "list", "watch", "update"]
+- apiGroups: ["apiextensions.k8s.io"]
+  resources: ["customresourcedefinitions"]
+  verbs: ["get", "list", "watch", "update"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: cert-manager-cainjector
+  labels:
+    app.kubernetes.io/name: cert-manager
+    app.kubernetes.io/component: cainjector
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cert-manager-cainjector
+subjects:
+- name: cert-manager-cainjector
+  namespace: cert-manager
+  kind: ServiceAccount
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cert-manager-cainjector
+  namespace: cert-manager
+  labels:
+    app.kubernetes.io/name: cert-manager
+    app.kubernetes.io/component: cainjector
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: cert-manager-webhook:subjectaccessreviews
+  labels:
+    app.kubernetes.io/name: cert-manager
+    app.kubernetes.io/component: webhook
+rules:
+- apiGroups: ["authorization.k8s.io"]
+  resources: ["subjectaccessreviews"]
+  verbs: ["create"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: cert-manager-webhook:subjectaccessreviews
+  labels:
+    app.kubernetes.io/name: cert-manager
+    app.kubernetes.io/component: webhook
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cert-manager-webhook:subjectaccessreviews
+subjects:
+- name: cert-manager-webhook
+  namespace: cert-manager
+  kind: ServiceAccount
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cert-manager-webhook
+  namespace: cert-manager
+  labels:
+    app.kubernetes.io/name: cert-manager
+    app.kubernetes.io/component: webhook
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cert-manager
+  namespace: cert-manager
+  labels:
+    app.kubernetes.io/name: cert-manager
+    app.kubernetes.io/component: cert-manager
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: cert-manager
+      app.kubernetes.io/component: cert-manager
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: cert-manager
+        app.kubernetes.io/component: cert-manager
+    spec:
+      serviceAccountName: cert-manager
+      containers:
+      - name: cert-manager
+        image: quay.io/jetstack/cert-manager-controller:v1.13.0
+        imagePullPolicy: IfNotPresent
+        args:
+        - --v=2
+        - --cluster-resource-namespace=$(POD_NAMESPACE)
+        - --leader-election-namespace=kube-system
+        - --leader-election-lease-duration=60s
+        - --leader-election-renew-deadline=40s
+        - --leader-election-retry-period=15s
+        - --max-concurrent-challenges=60
+        - --dns01-recursive-nameservers=8.8.8.8:53,1.1.1.1:53
+        - --dns01-recursive-nameservers-only
+        - --enable-owner-references=false
+        - --metrics-listen-address=0.0.0.0:9402
+        - --webhook-namespace=$(POD_NAMESPACE)
+        - --webhook-ca-secret=cert-manager-webhook-ca
+        - --webhook-serving-secret=cert-manager-webhook-tls
+        - --webhook-dns-names=cert-manager-webhook,cert-manager-webhook.cert-manager,cert-manager-webhook.cert-manager.svc
+        env:
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        ports:
+        - name: http-metrics
+          containerPort: 9402
+          protocol: TCP
+        resources:
+          requests:
+            cpu: 10m
+            memory: 32Mi
+        livenessProbe:
+          httpGet:
+            path: /livez
+            port: 6080
+            scheme: HTTP
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          timeoutSeconds: 1
+          successThreshold: 1
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 6080
+            scheme: HTTP
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 1
+          successThreshold: 1
+          failureThreshold: 3
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 1000
+          runAsGroup: 1000
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+          readOnly: false
+      - name: cainjector
+        image: quay.io/jetstack/cert-manager-cainjector:v1.13.0
+        imagePullPolicy: IfNotPresent
+        args:
+        - --v=2
+        - --leader-election-namespace=kube-system
+        - --leader-election-lease-duration=60s
+        - --leader-election-renew-deadline=40s
+        - --leader-election-retry-period=15s
+        - --webhook-namespace=$(POD_NAMESPACE)
+        - --webhook-ca-secret=cert-manager-webhook-ca
+        - --webhook-serving-secret=cert-manager-webhook-tls
+        - --webhook-dns-names=cert-manager-webhook,cert-manager-webhook.cert-manager,cert-manager-webhook.cert-manager.svc
+        env:
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        resources:
+          requests:
+            cpu: 10m
+            memory: 32Mi
+        livenessProbe:
+          httpGet:
+            path: /livez
+            port: 6080
+            scheme: HTTP
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          timeoutSeconds: 1
+          successThreshold: 1
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 6080
+            scheme: HTTP
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 1
+          successThreshold: 1
+          failureThreshold: 3
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 1000
+          runAsGroup: 1000
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+          readOnly: false
+      - name: webhook
+        image: quay.io/jetstack/cert-manager-webhook:v1.13.0
+        imagePullPolicy: IfNotPresent
+        args:
+        - --v=2
+        - --secure-port=10250
+        - --dynamic-serving-ca-secret-namespace=$(POD_NAMESPACE)
+        - --dynamic-serving-ca-secret-name=cert-manager-webhook-ca
+        - --dynamic-serving-dns-names=cert-manager-webhook,cert-manager-webhook.cert-manager,cert-manager-webhook.cert-manager.svc
+        - --webhook-namespace=$(POD_NAMESPACE)
+        - --webhook-ca-secret=cert-manager-webhook-ca
+        - --webhook-serving-secret=cert-manager-webhook-tls
+        - --webhook-dns-names=cert-manager-webhook,cert-manager-webhook.cert-manager,cert-manager-webhook.cert-manager.svc
+        env:
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        ports:
+        - name: https
+          containerPort: 10250
+          protocol: TCP
+        resources:
+          requests:
+            cpu: 10m
+            memory: 32Mi
+        livenessProbe:
+          httpGet:
+            path: /livez
+            port: 6080
+            scheme: HTTP
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          timeoutSeconds: 1
+          successThreshold: 1
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 6080
+            scheme: HTTP
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 1
+          successThreshold: 1
+          failureThreshold: 3
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 1000
+          runAsGroup: 1000
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+          readOnly: false
+      volumes:
+      - name: tmp
+        emptyDir: {}
+      nodeSelector:
+        kubernetes.io/os: linux
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cert-manager
+  namespace: cert-manager
+  labels:
+    app.kubernetes.io/name: cert-manager
+    app.kubernetes.io/component: cert-manager
+spec:
+  ports:
+  - name: http-metrics
+    port: 9402
+    targetPort: 9402
+    protocol: TCP
+  selector:
+    app.kubernetes.io/name: cert-manager
+    app.kubernetes.io/component: cert-manager
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cert-manager-webhook
+  namespace: cert-manager
+  labels:
+    app.kubernetes.io/name: cert-manager
+    app.kubernetes.io/component: webhook
+spec:
+  ports:
+  - name: https
+    port: 443
+    targetPort: 10250
+    protocol: TCP
+  selector:
+    app.kubernetes.io/name: cert-manager
+    app.kubernetes.io/component: cert-manager
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: cert-manager-webhook
+  labels:
+    app.kubernetes.io/name: cert-manager
+    app.kubernetes.io/component: webhook
+webhooks:
+- name: webhook.cert-manager.io
+  admissionReviewVersions: ["v1", "v1beta1"]
+  clientConfig:
+    service:
+      name: cert-manager-webhook
+      namespace: cert-manager
+      path: /mutate
+  failurePolicy: Fail
+  matchPolicy: Equivalent
+  rules:
+  - apiGroups: ["cert-manager.io"]
+    apiVersions: ["v1"]
+    operations: ["CREATE", "UPDATE"]
+    resources: ["certificates", "certificaterequests", "issuers", "clusterissuers"]
+  sideEffects: None
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: cert-manager-webhook
+  labels:
+    app.kubernetes.io/name: cert-manager
+    app.kubernetes.io/component: webhook
+webhooks:
+- name: webhook.cert-manager.io
+  admissionReviewVersions: ["v1", "v1beta1"]
+  clientConfig:
+    service:
+      name: cert-manager-webhook
+      namespace: cert-manager
+      path: /validate
+  failurePolicy: Fail
+  matchPolicy: Equivalent
+  rules:
+  - apiGroups: ["cert-manager.io"]
+    apiVersions: ["v1"]
+    operations: ["CREATE", "UPDATE"]
+    resources: ["certificates", "certificaterequests", "issuers", "clusterissuers"]
+  sideEffects: None
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+  labels:
+    app.kubernetes.io/name: letsencrypt-prod
+    app.kubernetes.io/component: cert-manager
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: admin@2gc.ru
+    privateKeySecretRef:
+      name: letsencrypt-prod
+    solvers:
+    - http01:
+        ingress:
+          class: nginx
+    - dns01:
+        cloudflare:
+          email: admin@2gc.ru
+          apiTokenSecretRef:
+            name: cloudflare-api-token
+            key: api-token
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-staging
+  labels:
+    app.kubernetes.io/name: letsencrypt-staging
+    app.kubernetes.io/component: cert-manager
+spec:
+  acme:
+    server: https://acme-staging-v02.api.letsencrypt.org/directory
+    email: admin@2gc.ru
+    privateKeySecretRef:
+      name: letsencrypt-staging
+    solvers:
+    - http01:
+        ingress:
+          class: nginx
+    - dns01:
+        cloudflare:
+          email: admin@2gc.ru
+          apiTokenSecretRef:
+            name: cloudflare-api-token
+            key: api-token
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: cloudflare-api-token
+  namespace: cert-manager
+  labels:
+    app.kubernetes.io/name: cloudflare-token
+    app.kubernetes.io/component: cert-manager
+type: Opaque
+data:
+  api-token: <base64-encoded-cloudflare-token>
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: cb-interpop-cert
+  namespace: cloudbridge-relay
+  labels:
+    app.kubernetes.io/name: interpop-cert
+    app.kubernetes.io/component: cert-manager
+spec:
+  secretName: cb-interpop-cert
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  dnsNames:
+  - "*.pop.cb"
+  - "mow.pop.cb"
+  - "fra.pop.cb"
+  - "ams.pop.cb"
+  - "*.2gc.ru"
+  - "control.2gc.ru"
+  - "auth.2gc.ru"
+  - "ai.2gc.ru"
+  duration: 2160h
+  renewBefore: 360h
+  isCA: false
+  privateKey:
+    algorithm: RSA
+    encoding: PKCS1
+    size: 2048
+  usages:
+  - digital signature
+  - key encipherment
+  - server auth
+  - client auth
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: cb-ca-bundle
+  namespace: cloudbridge-relay
+  labels:
+    app.kubernetes.io/name: ca-bundle
+    app.kubernetes.io/component: cert-manager
+spec:
+  secretName: cb-ca-bundle
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  dnsNames:
+  - "*.pop.cb"
+  - "mow.pop.cb"
+  - "fra.pop.cb"
+  - "ams.pop.cb"
+  - "*.2gc.ru"
+  - "control.2gc.ru"
+  - "auth.2gc.ru"
+  - "ai.2gc.ru"
+  duration: 8760h
+  renewBefore: 720h
+  isCA: true
+  privateKey:
+    algorithm: RSA
+    encoding: PKCS1
+    size: 4096
+  usages:
+  - digital signature
+  - key encipherment
+  - cert sign
+  - crl sign
+  - server auth
+  - client auth

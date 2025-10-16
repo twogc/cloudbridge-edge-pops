@@ -1,0 +1,553 @@
+# Практичные Network Policies для домашних и мобильных сетей
+# CloudBridge Edge PoP - Сетевые политики по профилям
+
+---
+# Gaming Profile Network Policy - максимальная производительность
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: gaming-profile-policy
+  namespace: cloudbridge-relay
+  labels:
+    app: cloudbridge-relay
+    profile: gaming
+    app.kubernetes.io/name: network-policy
+    app.kubernetes.io/component: security
+spec:
+  podSelector:
+    matchLabels:
+      app: cloudbridge-relay
+      profile: gaming
+  policyTypes:
+  - Ingress
+  - Egress
+  
+  ingress:
+  # Высокоприоритетный трафик для игр
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: cloudbridge-control
+    - podSelector:
+        matchLabels:
+          app: cloudbridge-relay
+          profile: gaming
+    ports:
+    - protocol: UDP
+      port: 443      # QUIC gaming
+    - protocol: UDP
+      port: 51820    # WireGuard gaming
+    - protocol: UDP
+      port: 3478     # TURN gaming
+    - protocol: UDP
+      port: 9090     # MASQUE gaming
+    - protocol: TCP
+      port: 8444     # gRPC gaming
+    - protocol: TCP
+      port: 8443     # REST API gaming
+      
+  # DSCP маркировка для игрового трафика
+  - from:
+    - podSelector:
+        matchLabels:
+          app: gaming-client
+    ports:
+    - protocol: UDP
+      port: 443
+    - protocol: UDP
+      port: 51820
+    - protocol: UDP
+      port: 3478
+      
+  egress:
+  # Исходящий трафик для игр
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: cloudbridge-control
+    - podSelector:
+        matchLabels:
+          app: cloudbridge-relay
+    ports:
+    - protocol: UDP
+      port: 443
+    - protocol: UDP
+      port: 51820
+    - protocol: UDP
+      port: 3478
+    - protocol: UDP
+      port: 9090
+    - protocol: TCP
+      port: 8444
+    - protocol: TCP
+      port: 8443
+      
+  # Доступ к AI сервису для оптимизации маршрутизации
+  - to:
+    - podSelector:
+        matchLabels:
+          app: ai-service
+    ports:
+    - protocol: TCP
+      port: 8083
+      
+  # Доступ к мониторингу
+  - to:
+    - podSelector:
+        matchLabels:
+          app: prometheus
+    ports:
+    - protocol: TCP
+      port: 9090
+
+---
+# Streaming Profile Network Policy - оптимизация для видео
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: streaming-profile-policy
+  namespace: cloudbridge-relay
+  labels:
+    app: cloudbridge-relay
+    profile: streaming
+    app.kubernetes.io/name: network-policy
+    app.kubernetes.io/component: security
+spec:
+  podSelector:
+    matchLabels:
+      app: cloudbridge-relay
+      profile: streaming
+  policyTypes:
+  - Ingress
+  - Egress
+  
+  ingress:
+  # Трафик для стриминга
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: cloudbridge-control
+    - podSelector:
+        matchLabels:
+          app: cloudbridge-relay
+          profile: streaming
+    ports:
+    - protocol: UDP
+      port: 443      # QUIC streaming
+    - protocol: UDP
+      port: 51820    # WireGuard streaming
+    - protocol: UDP
+      port: 3478     # TURN streaming
+    - protocol: UDP
+      port: 9090     # MASQUE streaming
+    - protocol: TCP
+      port: 8444     # gRPC streaming
+    - protocol: TCP
+      port: 8443     # REST API streaming
+      
+  # DSCP маркировка для видео трафика
+  - from:
+    - podSelector:
+        matchLabels:
+          app: streaming-client
+    ports:
+    - protocol: UDP
+      port: 443
+    - protocol: UDP
+      port: 51820
+    - protocol: UDP
+      port: 3478
+      
+  egress:
+  # Исходящий трафик для стриминга
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: cloudbridge-control
+    - podSelector:
+        matchLabels:
+          app: cloudbridge-relay
+    ports:
+    - protocol: UDP
+      port: 443
+    - protocol: UDP
+      port: 51820
+    - protocol: UDP
+      port: 3478
+    - protocol: UDP
+      port: 9090
+    - protocol: TCP
+      port: 8444
+    - protocol: TCP
+      port: 8443
+      
+  # Доступ к CDN для стриминга
+  - to:
+    - podSelector:
+        matchLabels:
+          app: cdn-proxy
+    ports:
+    - protocol: TCP
+      port: 80
+    - protocol: TCP
+      port: 443
+    - protocol: UDP
+      port: 443
+      
+  # Доступ к AI сервису для ABR оптимизации
+  - to:
+    - podSelector:
+        matchLabels:
+          app: ai-service
+    ports:
+    - protocol: TCP
+      port: 8083
+
+---
+# Mobile Profile Network Policy - оптимизация для мобильных сетей
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: mobile-profile-policy
+  namespace: cloudbridge-relay
+  labels:
+    app: cloudbridge-relay
+    profile: mobile
+    app.kubernetes.io/name: network-policy
+    app.kubernetes.io/component: security
+spec:
+  podSelector:
+    matchLabels:
+      app: cloudbridge-relay
+      profile: mobile
+  policyTypes:
+  - Ingress
+  - Egress
+  
+  ingress:
+  # Трафик для мобильных устройств
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: cloudbridge-control
+    - podSelector:
+        matchLabels:
+          app: cloudbridge-relay
+          profile: mobile
+    ports:
+    - protocol: UDP
+      port: 443      # QUIC mobile
+    - protocol: UDP
+      port: 51820    # WireGuard mobile
+    - protocol: UDP
+      port: 3478     # TURN mobile
+    - protocol: UDP
+      port: 9090     # MASQUE mobile
+    - protocol: TCP
+      port: 8444     # gRPC mobile
+    - protocol: TCP
+      port: 8443     # REST API mobile
+      
+  # DSCP маркировка для мобильного трафика
+  - from:
+    - podSelector:
+        matchLabels:
+          app: mobile-client
+    ports:
+    - protocol: UDP
+      port: 443
+    - protocol: UDP
+      port: 51820
+    - protocol: UDP
+      port: 3478
+      
+  egress:
+  # Исходящий трафик для мобильных
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: cloudbridge-control
+    - podSelector:
+        matchLabels:
+          app: cloudbridge-relay
+    ports:
+    - protocol: UDP
+      port: 443
+    - protocol: UDP
+      port: 51820
+    - protocol: UDP
+      port: 3478
+    - protocol: UDP
+      port: 9090
+    - protocol: TCP
+      port: 8444
+    - protocol: TCP
+      port: 8443
+      
+  # Доступ к мобильным сервисам
+  - to:
+    - podSelector:
+        matchLabels:
+          app: mobile-gateway
+    ports:
+    - protocol: TCP
+      port: 80
+    - protocol: TCP
+      port: 443
+    - protocol: UDP
+      port: 443
+      
+  # Доступ к AI сервису для мобильной оптимизации
+  - to:
+    - podSelector:
+        matchLabels:
+          app: ai-service
+    ports:
+    - protocol: TCP
+      port: 8083
+
+---
+# Prime-time Profile Network Policy - оптимизация для праймтайма
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: prime-time-profile-policy
+  namespace: cloudbridge-relay
+  labels:
+    app: cloudbridge-relay
+    profile: prime-time
+    app.kubernetes.io/name: network-policy
+    app.kubernetes.io/component: security
+spec:
+  podSelector:
+    matchLabels:
+      app: cloudbridge-relay
+      profile: prime-time
+  policyTypes:
+  - Ingress
+  - Egress
+  
+  ingress:
+  # Трафик для праймтайма (комбинированный)
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: cloudbridge-control
+    - podSelector:
+        matchLabels:
+          app: cloudbridge-relay
+          profile: prime-time
+    ports:
+    - protocol: UDP
+      port: 443      # QUIC prime-time
+    - protocol: UDP
+      port: 51820    # WireGuard prime-time
+    - protocol: UDP
+      port: 3478     # TURN prime-time
+    - protocol: UDP
+      port: 9090     # MASQUE prime-time
+    - protocol: TCP
+      port: 8444     # gRPC prime-time
+    - protocol: TCP
+      port: 8443     # REST API prime-time
+      
+  # Приоритизация трафика в праймтайм
+  - from:
+    - podSelector:
+        matchLabels:
+          app: gaming-client
+    ports:
+    - protocol: UDP
+      port: 443
+    - protocol: UDP
+      port: 51820
+    - protocol: UDP
+      port: 3478
+      
+  - from:
+    - podSelector:
+        matchLabels:
+          app: streaming-client
+    ports:
+    - protocol: UDP
+      port: 443
+    - protocol: UDP
+      port: 51820
+    - protocol: UDP
+      port: 3478
+      
+  egress:
+  # Исходящий трафик для праймтайма
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: cloudbridge-control
+    - podSelector:
+        matchLabels:
+          app: cloudbridge-relay
+    ports:
+    - protocol: UDP
+      port: 443
+    - protocol: UDP
+      port: 51820
+    - protocol: UDP
+      port: 3478
+    - protocol: UDP
+      port: 9090
+    - protocol: TCP
+      port: 8444
+    - protocol: TCP
+      port: 8443
+      
+  # Доступ к CDN с приоритизацией
+  - to:
+    - podSelector:
+        matchLabels:
+          app: cdn-proxy
+    ports:
+    - protocol: TCP
+      port: 80
+    - protocol: TCP
+      port: 443
+    - protocol: UDP
+      port: 443
+      
+  # Доступ к AI сервису для праймтайм оптимизации
+  - to:
+    - podSelector:
+        matchLabels:
+          app: ai-service
+    ports:
+    - protocol: TCP
+      port: 8083
+
+---
+# Calico Global Network Policy - глобальные правила
+apiVersion: projectcalico.org/v3
+kind: GlobalNetworkPolicy
+metadata:
+  name: cloudbridge-global-policy
+spec:
+  tier: security
+  order: 100
+  selector: app == "cloudbridge-relay"
+  types:
+  - Ingress
+  - Egress
+  
+  ingress:
+  # Глобальные правила для CloudBridge
+  - action: Allow
+    protocol: UDP
+    source:
+      selector: app == "cloudbridge-relay"
+    destination:
+      ports:
+      - 443
+      - 51820
+      - 3478
+      - 9090
+      
+  - action: Allow
+    protocol: TCP
+    source:
+      selector: app == "cloudbridge-relay"
+    destination:
+      ports:
+      - 8444
+      - 8443
+      
+  egress:
+  # Исходящие правила для CloudBridge
+  - action: Allow
+    protocol: UDP
+    destination:
+      selector: app == "cloudbridge-relay"
+    source:
+      ports:
+      - 443
+      - 51820
+      - 3478
+      - 9090
+      
+  - action: Allow
+    protocol: TCP
+    destination:
+      selector: app == "cloudbridge-relay"
+    source:
+      ports:
+      - 8444
+      - 8443
+      
+  # Доступ к внешним сервисам
+  - action: Allow
+    protocol: TCP
+    destination:
+      nets:
+      - 0.0.0.0/0
+    source:
+      ports:
+      - 80
+      - 443
+      - 53
+      
+  - action: Allow
+    protocol: UDP
+    destination:
+      nets:
+      - 0.0.0.0/0
+    source:
+      ports:
+      - 53
+      - 123
+
+---
+# Calico Profile для тенантов
+apiVersion: projectcalico.org/v3
+kind: Profile
+metadata:
+  name: cloudbridge-tenant-profile
+spec:
+  ingress:
+  # Правила для тенантов
+  - action: Allow
+    protocol: UDP
+    source:
+      selector: app == "cloudbridge-relay"
+    destination:
+      ports:
+      - 443
+      - 51820
+      - 3478
+      
+  - action: Allow
+    protocol: TCP
+    source:
+      selector: app == "cloudbridge-relay"
+    destination:
+      ports:
+      - 8444
+      - 8443
+      
+  egress:
+  # Исходящие правила для тенантов
+  - action: Allow
+    protocol: UDP
+    destination:
+      selector: app == "cloudbridge-relay"
+    source:
+      ports:
+      - 443
+      - 51820
+      - 3478
+      
+  - action: Allow
+    protocol: TCP
+    destination:
+      selector: app == "cloudbridge-relay"
+    source:
+      ports:
+      - 8444
+      - 8443
+
+

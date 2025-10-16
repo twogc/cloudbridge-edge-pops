@@ -1,0 +1,438 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "MASQUE Performance",
+    "tags": ["cloudbridge", "masque", "performance"],
+    "style": "dark",
+    "timezone": "browser",
+    "refresh": "30s",
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "panels": [
+      {
+        "id": 1,
+        "title": "Active Contexts",
+        "type": "graph",
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 0
+        },
+        "targets": [
+          {
+            "expr": "masque_active_contexts",
+            "legendFormat": "{{region}} Active Contexts",
+            "refId": "A"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "Contexts",
+            "min": 0
+          },
+          {
+            "show": false
+          }
+        ],
+        "xAxis": {
+          "show": true
+        },
+        "legend": {
+          "show": true,
+          "values": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "avg": false
+        },
+        "thresholds": [
+          {
+            "value": 13107,
+            "colorMode": "critical",
+            "op": "gt",
+            "fill": true,
+            "line": true
+          },
+          {
+            "value": 8192,
+            "colorMode": "warning",
+            "op": "gt",
+            "fill": true,
+            "line": true
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "title": "MASQUE Connections",
+        "type": "graph",
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 0
+        },
+        "targets": [
+          {
+            "expr": "rate(masque_connections_total[5m])",
+            "legendFormat": "{{region}} Connections/sec",
+            "refId": "A"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "Connections/sec",
+            "min": 0
+          },
+          {
+            "show": false
+          }
+        ],
+        "xAxis": {
+          "show": true
+        },
+        "legend": {
+          "show": true,
+          "values": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "avg": false
+        }
+      },
+      {
+        "id": 3,
+        "title": "MASQUE Error Rate",
+        "type": "graph",
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 8
+        },
+        "targets": [
+          {
+            "expr": "rate(masque_errors_total[5m]) / rate(masque_connections_total[5m]) * 100",
+            "legendFormat": "{{region}} Error Rate %",
+            "refId": "A"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "Error Rate %",
+            "max": 10,
+            "min": 0
+          },
+          {
+            "show": false
+          }
+        ],
+        "xAxis": {
+          "show": true
+        },
+        "legend": {
+          "show": true,
+          "values": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "avg": false
+        },
+        "thresholds": [
+          {
+            "value": 5,
+            "colorMode": "critical",
+            "op": "gt",
+            "fill": true,
+            "line": true
+          },
+          {
+            "value": 1,
+            "colorMode": "warning",
+            "op": "gt",
+            "fill": true,
+            "line": true
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "title": "Neighbor Connectivity",
+        "type": "graph",
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 8
+        },
+        "targets": [
+          {
+            "expr": "masque_neighbor_connectivity",
+            "legendFormat": "{{neighbor}} Connectivity",
+            "refId": "A"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "Connectivity",
+            "max": 1,
+            "min": 0
+          },
+          {
+            "show": false
+          }
+        ],
+        "xAxis": {
+          "show": true
+        },
+        "legend": {
+          "show": true,
+          "values": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "avg": false
+        },
+        "thresholds": [
+          {
+            "value": 0,
+            "colorMode": "critical",
+            "op": "eq",
+            "fill": true,
+            "line": true
+          },
+          {
+            "value": 1,
+            "colorMode": "green",
+            "op": "eq",
+            "fill": true,
+            "line": true
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "title": "MASQUE RTT",
+        "type": "graph",
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 16
+        },
+        "targets": [
+          {
+            "expr": "masque_rtt_seconds",
+            "legendFormat": "{{region}} RTT",
+            "refId": "A"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "RTT (seconds)",
+            "max": 0.1,
+            "min": 0
+          },
+          {
+            "show": false
+          }
+        ],
+        "xAxis": {
+          "show": true
+        },
+        "legend": {
+          "show": true,
+          "values": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "avg": false
+        },
+        "thresholds": [
+          {
+            "value": 0.05,
+            "colorMode": "critical",
+            "op": "gt",
+            "fill": true,
+            "line": true
+          },
+          {
+            "value": 0.03,
+            "colorMode": "warning",
+            "op": "gt",
+            "fill": true,
+            "line": true
+          }
+        ]
+      },
+      {
+        "id": 6,
+        "title": "Context Utilization",
+        "type": "stat",
+        "gridPos": {
+          "h": 4,
+          "w": 6,
+          "x": 12,
+          "y": 16
+        },
+        "targets": [
+          {
+            "expr": "masque_active_contexts / masque_max_contexts * 100",
+            "legendFormat": "{{region}} Utilization %",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "min": 0,
+            "max": 100,
+            "thresholds": {
+              "steps": [
+                {
+                  "color": "green",
+                  "value": 0
+                },
+                {
+                  "color": "yellow",
+                  "value": 60
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            }
+          }
+        },
+        "options": {
+          "colorMode": "value",
+          "graphMode": "area",
+          "justifyMode": "auto",
+          "orientation": "auto"
+        }
+      },
+      {
+        "id": 7,
+        "title": "Total Connections",
+        "type": "stat",
+        "gridPos": {
+          "h": 4,
+          "w": 6,
+          "x": 18,
+          "y": 16
+        },
+        "targets": [
+          {
+            "expr": "masque_connections_total",
+            "legendFormat": "{{region}} Total Connections",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "min": 0
+          }
+        },
+        "options": {
+          "colorMode": "value",
+          "graphMode": "area",
+          "justifyMode": "auto",
+          "orientation": "auto"
+        }
+      },
+      {
+        "id": 8,
+        "title": "MASQUE Throughput",
+        "type": "graph",
+        "gridPos": {
+          "h": 8,
+          "w": 24,
+          "x": 0,
+          "y": 20
+        },
+        "targets": [
+          {
+            "expr": "rate(masque_bytes_sent_total[5m])",
+            "legendFormat": "{{region}} Bytes Sent/sec",
+            "refId": "A"
+          },
+          {
+            "expr": "rate(masque_bytes_received_total[5m])",
+            "legendFormat": "{{region}} Bytes Received/sec",
+            "refId": "B"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "Bytes/sec",
+            "min": 0
+          },
+          {
+            "show": false
+          }
+        ],
+        "xAxis": {
+          "show": true
+        },
+        "legend": {
+          "show": true,
+          "values": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "avg": false
+        }
+      }
+    ],
+    "templating": {
+      "list": [
+        {
+          "name": "region",
+          "type": "query",
+          "query": "label_values(masque_active_contexts, region)",
+          "refresh": 1,
+          "includeAll": true,
+          "multi": true,
+          "allValue": ".*"
+        },
+        {
+          "name": "neighbor",
+          "type": "query",
+          "query": "label_values(masque_neighbor_connectivity, neighbor)",
+          "refresh": 1,
+          "includeAll": true,
+          "multi": true,
+          "allValue": ".*"
+        }
+      ]
+    },
+    "annotations": {
+      "list": [
+        {
+          "name": "MASQUE Alerts",
+          "datasource": "Prometheus",
+          "expr": "ALERTS{alertname=~\"MASQUE.*\"}",
+          "enable": true,
+          "iconColor": "red"
+        }
+      ]
+    },
+    "links": [
+      {
+        "title": "Prometheus",
+        "url": "http://prometheus:9090",
+        "type": "link"
+      },
+      {
+        "title": "Alertmanager",
+        "url": "http://alertmanager:9093",
+        "type": "link"
+      }
+    ]
+  }
+}
