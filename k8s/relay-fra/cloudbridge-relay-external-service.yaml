@@ -2,7 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: cloudbridge-relay-external
-  namespace: cloudbridge
+  namespace: cloudbridge-relay
   labels:
     app: cloudbridge-relay
     app.kubernetes.io/part-of: cloudbridge-relay
@@ -70,7 +70,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: cloudbridge-relay-loadbalancer
-  namespace: cloudbridge
+  namespace: cloudbridge-relay
   labels:
     app: cloudbridge-relay
     app.kubernetes.io/part-of: cloudbridge-relay

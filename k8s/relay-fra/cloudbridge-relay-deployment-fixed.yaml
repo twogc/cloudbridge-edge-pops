@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: cloudbridge-relay
-  namespace: cloudbridge
+  namespace: cloudbridge-relay
   labels:
     app: cloudbridge-relay
     app.kubernetes.io/name: cloudbridge-relay
@@ -16,6 +16,7 @@ spec:
     metadata:
       labels:
         app: cloudbridge-relay
+        region: fra
         app.kubernetes.io/name: cloudbridge-relay
         app.kubernetes.io/component: relay
     spec:
@@ -47,6 +48,9 @@ spec:
         - containerPort: 9090
           name: quic-legacy
           protocol: UDP
+        - containerPort: 9091
+          name: health
+          protocol: TCP
         - containerPort: 9092
           name: enhanced-quic
           protocol: UDP

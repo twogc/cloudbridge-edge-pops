@@ -1,0 +1,88 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cloudbridge-config-json
+  namespace: cloudbridge-relay
+  labels:
+    app: cloudbridge-relay
+    app.kubernetes.io/name: cloudbridge-relay
+    app.kubernetes.io/component: relay
+data:
+  config.json: |
+    {
+      "server": {
+        "host": "0.0.0.0",
+        "port": 5550,
+        "tls": {
+          "enabled": true,
+          "cert_file": "/app/certs/tls.crt",
+          "key_file": "/app/certs/tls.key"
+        }
+      },
+      "metrics": {
+        "enabled": true,
+        "port": 5551,
+        "path": "/metrics"
+      },
+      "p2p": {
+        "enabled": true,
+        "port": 5552,
+        "quic_port": 5555,
+        "stun_port": 19302
+      },
+      "api": {
+        "http_port": 5553,
+        "https_port": 5554,
+        "grpc_port": 8444
+      },
+      "quic": {
+        "transport_port": 5555,
+        "legacy_port": 9090,
+        "enhanced_port": 9092,
+        "masque_port": 8443
+      },
+      "masque": {
+        "enabled": true,
+        "port": 8443,
+        "max_contexts": 16384,
+        "tenant_header": "x-cb-tenant"
+      },
+      "inter_pop": {
+        "enabled": true,
+        "mtls": {
+          "enabled": true,
+          "ca_cert": "/app/certs/ca.crt",
+          "cert_file": "/app/certs/tls.crt",
+          "key_file": "/app/certs/tls.key"
+        },
+        "neighbors": [
+          {
+            "name": "EU-FRA",
+            "endpoint": "fra.pop.cb:443",
+            "region": "EU-FRA",
+            "weight": 100
+          },
+          {
+            "name": "EU-AMS", 
+            "endpoint": "ams.pop.cb:443",
+            "region": "EU-AMS",
+            "weight": 90
+          }
+        ]
+      },
+      "cadence": {
+        "enabled": true,
+        "host_port": "cadence:7933",
+        "domain": "cloudbridge-p2p",
+        "task_list": "p2p-quic-tasks"
+      },
+      "ai_service": {
+        "enabled": true,
+        "url": "http://ai-service:8083",
+        "timeout": "30s"
+      },
+      "health": {
+        "port": 9091,
+        "path": "/health"
+      }
+    }
