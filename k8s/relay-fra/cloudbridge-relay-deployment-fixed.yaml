@@ -57,6 +57,9 @@ spec:
         - containerPort: 19302
           name: stun-server
           protocol: UDP
+        - containerPort: 5556
+          name: p2p-quic
+          protocol: UDP
         env:
         - name: RELAY_JWT_SECRET
           value: "default-jwt-secret"

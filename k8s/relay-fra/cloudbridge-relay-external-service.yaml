@@ -26,13 +26,13 @@ spec:
     # P2P API  
     - name: p2p-api
       port: 5552
-      targetPort: 9091
+      targetPort: 5552
       nodePort: 30192
       protocol: TCP
     # HTTP API
     - name: http-api
       port: 5553
-      targetPort: 5553
+      targetPort: 5556
       nodePort: 30093
       protocol: TCP
     # STUN Server
@@ -44,7 +44,7 @@ spec:
     # QUIC Transport
     - name: quic-transport
       port: 9090
-      targetPort: 9090
+      targetPort: 5555
       nodePort: 30094
       protocol: UDP
     # MASQUE Proxy
@@ -62,7 +62,7 @@ spec:
     # P2P QUIC Server
     - name: p2p-quic
       port: 5553
-      targetPort: 5553
+      targetPort: 5556
       nodePort: 30097
       protocol: UDP
 ---
@@ -92,12 +92,12 @@ spec:
     # P2P API
     - name: p2p-api
       port: 5552
-      targetPort: 9091
+      targetPort: 5552
       protocol: TCP
     # HTTP API
     - name: http-api
       port: 5553
-      targetPort: 5553
+      targetPort: 5556
       protocol: TCP
     # STUN Server
     - name: stun-server
@@ -107,7 +107,7 @@ spec:
     # QUIC Transport
     - name: quic-transport
       port: 9090
-      targetPort: 9090
+      targetPort: 5555
       protocol: UDP
     # MASQUE Proxy
     - name: masque-proxy
@@ -122,6 +122,6 @@ spec:
     # P2P QUIC Server
     - name: p2p-quic
       port: 5553
-      targetPort: 5553
+      targetPort: 5556
       protocol: UDP
 

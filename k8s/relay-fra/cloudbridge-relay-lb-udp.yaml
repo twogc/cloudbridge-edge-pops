@@ -17,10 +17,10 @@ spec:
     app.kubernetes.io/name: cloudbridge-relay
     app.kubernetes.io/component: relay
   ports:
-  - name: quic-udp
-    port: 9090
-    targetPort: 9090
-    protocol: UDP
+      - name: quic-udp
+        port: 5555
+        targetPort: 5555
+        protocol: UDP
   - name: wireguard-udp
     port: 51820
     targetPort: 51820
