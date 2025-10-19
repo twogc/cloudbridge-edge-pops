@@ -1,0 +1,177 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: relay-ams-production
+  namespace: cloudbridge-relay
+  labels:
+    app.kubernetes.io/component: relay
+    app.kubernetes.io/instance: cloudbridge
+    app.kubernetes.io/name: relay
+    app.kubernetes.io/part-of: cloudbridge-edge-pops
+    app.kubernetes.io/version: 1.0.0
+    region: ams
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: relay
+      app.kubernetes.io/instance: cloudbridge
+      app.kubernetes.io/name: relay
+      app.kubernetes.io/part-of: cloudbridge-edge-pops
+      region: ams
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: relay
+        app.kubernetes.io/instance: cloudbridge
+        app.kubernetes.io/name: relay
+        app.kubernetes.io/part-of: cloudbridge-edge-pops
+        app.kubernetes.io/version: 1.0.0
+        region: ams
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: relay-production
+      securityContext:
+        fsGroup: 1000
+        runAsNonRoot: true
+        runAsUser: 1000
+      containers:
+      - name: relay
+        image: cloudbridge/relay:latest
+        ports:
+        - name: quic
+          containerPort: 443
+          protocol: UDP
+        - name: masque
+          containerPort: 9090
+          protocol: UDP
+        - name: wireguard
+          containerPort: 51820
+          protocol: UDP
+        - name: turn
+          containerPort: 3478
+          protocol: UDP
+        - name: metrics
+          containerPort: 9090
+          protocol: TCP
+        - name: health
+          containerPort: 8080
+          protocol: TCP
+        - name: ready
+          containerPort: 8181
+          protocol: TCP
+        env:
+        - name: REGION
+          value: "EU-AMS"
+        - name: CONTROL_PLANE_URL
+          value: "https://control.2gc.ru"
+        - name: ZITADEL_URL
+          value: "https://auth.2gc.ru"
+        - name: AI_SERVICE_URL
+          value: "https://ai.2gc.ru:8083"
+        - name: MASQUE_ENABLED
+          value: "true"
+        - name: INTER_POP_ENABLED
+          value: "true"
+        - name: METRICS_ENABLED
+          value: "true"
+        - name: HEALTH_CHECK_ENABLED
+          value: "true"
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "200m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8181
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+            add:
+            - NET_BIND_SERVICE
+        volumeMounts:
+        - name: config
+          mountPath: /etc/cloudbridge
+          readOnly: true
+        - name: masque-config
+          mountPath: /etc/masque
+          readOnly: true
+        - name: tls-certs
+          mountPath: /etc/tls
+          readOnly: true
+        - name: tmp
+          mountPath: /tmp
+        - name: cache
+          mountPath: /cache
+      volumes:
+      - name: config
+        configMap:
+          name: relay-config-ams
+      - name: masque-config
+        configMap:
+          name: masque-config
+      - name: tls-certs
+        secret:
+          secretName: relay-tls-certs
+      - name: tmp
+        emptyDir: {}
+      - name: cache
+        emptyDir: {}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app.kubernetes.io/name
+                  operator: In
+                  values:
+                  - relay
+              topologyKey: kubernetes.io/hostname
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        operator: Exists
+        effect: NoSchedule
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
+        effect: NoSchedule
+      - key: cloudbridge.io/edge-pop
+        operator: Exists
+        effect: NoSchedule
+      nodeSelector:
+        kubernetes.io/os: linux
+
+
+
+
+

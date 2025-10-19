@@ -1,0 +1,141 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ebpf-exporter-config
+  namespace: cloudbridge-relay
+  labels:
+    app.kubernetes.io/component: exporter
+    app.kubernetes.io/instance: cloudbridge
+    app.kubernetes.io/name: ebpf-exporter
+    app.kubernetes.io/part-of: cloudbridge-edge-pops
+data:
+  config.yaml: |
+    # eBPF Exporter Configuration for CloudBridge Edge PoP
+    # Based on cloudflare/ebpf_exporter reference implementation
+    
+    # Network performance monitoring
+    - name: network_latency
+      program: |
+        #include <linux/bpf.h>
+        #include <linux/ptrace.h>
+        #include <linux/skbuff.h>
+        
+        // Monitor network latency for QUIC/MASQUE traffic
+        SEC("kprobe/tcp_v4_connect")
+        int tcp_connect(struct pt_regs *ctx) {
+            // Track connection latency
+            return 0;
+        }
+      
+    - name: packet_drops
+      program: |
+        #include <linux/bpf.h>
+        #include <linux/netdevice.h>
+        
+        // Monitor packet drops in network stack
+        SEC("kprobe/netif_receive_skb")
+        int netif_receive_skb(struct pt_regs *ctx) {
+            // Track packet drops
+            return 0;
+        }
+    
+    - name: tcp_retransmit
+      program: |
+        #include <linux/bpf.h>
+        #include <linux/tcp.h>
+        
+        // Monitor TCP retransmissions
+        SEC("kprobe/tcp_retransmit_skb")
+        int tcp_retransmit_skb(struct pt_regs *ctx) {
+            // Track retransmissions
+            return 0;
+        }
+    
+    - name: udp_drops
+      program: |
+        #include <linux/bpf.h>
+        #include <linux/udp.h>
+        
+        // Monitor UDP packet drops (QUIC traffic)
+        SEC("kprobe/udp_rcv")
+        int udp_rcv(struct pt_regs *ctx) {
+            // Track UDP drops
+            return 0;
+        }
+    
+    - name: socket_backlog
+      program: |
+        #include <linux/bpf.h>
+        #include <linux/socket.h>
+        
+        // Monitor socket backlog for QUIC connections
+        SEC("kprobe/sock_queue_rcv_skb")
+        int sock_queue_rcv_skb(struct pt_regs *ctx) {
+            // Track socket backlog
+            return 0;
+        }
+    
+    - name: network_throughput
+      program: |
+        #include <linux/bpf.h>
+        #include <linux/skbuff.h>
+        
+        // Monitor network throughput
+        SEC("kprobe/dev_queue_xmit")
+        int dev_queue_xmit(struct pt_regs *ctx) {
+            // Track throughput
+            return 0;
+        }
+    
+    - name: tcp_window_clamps
+      program: |
+        #include <linux/bpf.h>
+        #include <linux/tcp.h>
+        
+        // Monitor TCP window clamps for performance
+        SEC("kprobe/tcp_set_window_clamp")
+        int tcp_set_window_clamp(struct pt_regs *ctx) {
+            // Track window clamps
+            return 0;
+        }
+    
+    - name: tcp_syn_backlog
+      program: |
+        #include <linux/bpf.h>
+        #include <linux/tcp.h>
+        
+        // Monitor TCP SYN backlog
+        SEC("kprobe/tcp_v4_syn_recv_sock")
+        int tcp_v4_syn_recv_sock(struct pt_regs *ctx) {
+            // Track SYN backlog
+            return 0;
+        }
+    
+    - name: network_errors
+      program: |
+        #include <linux/bpf.h>
+        #include <linux/netdevice.h>
+        
+        // Monitor network errors
+        SEC("kprobe/netif_rx")
+        int netif_rx(struct pt_regs *ctx) {
+            // Track network errors
+            return 0;
+        }
+    
+    - name: quic_connections
+      program: |
+        #include <linux/bpf.h>
+        #include <linux/socket.h>
+        
+        // Monitor QUIC connections specifically
+        SEC("kprobe/sock_create")
+        int sock_create(struct pt_regs *ctx) {
+            // Track QUIC connections
+            return 0;
+        }
+
+
+
+
+

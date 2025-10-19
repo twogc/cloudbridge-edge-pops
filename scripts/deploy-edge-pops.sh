@@ -182,3 +182,9 @@ echo "  - Тест связности: ./scripts/test-inter-pop-connectivity.sh"
 
 
 
+
+
+
+
+
+

@@ -1,0 +1,70 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: relay-servicemonitor
+  namespace: cloudbridge-relay
+  labels:
+    app.kubernetes.io/component: relay
+    app.kubernetes.io/instance: cloudbridge
+    app.kubernetes.io/name: relay
+    app.kubernetes.io/part-of: cloudbridge-edge-pops
+    release: prometheus-stack
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: relay
+      app.kubernetes.io/instance: cloudbridge
+      app.kubernetes.io/name: relay
+  endpoints:
+  - port: metrics
+    interval: 30s
+    path: /metrics
+    relabelings:
+    - sourceLabels: [__meta_kubernetes_pod_node_name]
+      targetLabel: kubernetes_node
+    - sourceLabels: [__meta_kubernetes_pod_name]
+      targetLabel: kubernetes_pod
+    - sourceLabels: [__meta_kubernetes_pod_label_region]
+      targetLabel: region
+    - sourceLabels: [__meta_kubernetes_pod_label_app_kubernetes_io_part_of]
+      targetLabel: component
+    - sourceLabels: [__meta_kubernetes_pod_label_app_kubernetes_io_instance]
+      targetLabel: instance
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: relay-podmonitor
+  namespace: cloudbridge-relay
+  labels:
+    app.kubernetes.io/component: relay
+    app.kubernetes.io/instance: cloudbridge
+    app.kubernetes.io/name: relay
+    app.kubernetes.io/part-of: cloudbridge-edge-pops
+    release: prometheus-stack
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: relay
+      app.kubernetes.io/instance: cloudbridge
+      app.kubernetes.io/name: relay
+  podMetricsEndpoints:
+  - port: metrics
+    interval: 30s
+    path: /metrics
+    relabelings:
+    - sourceLabels: [__meta_kubernetes_pod_node_name]
+      targetLabel: kubernetes_node
+    - sourceLabels: [__meta_kubernetes_pod_name]
+      targetLabel: kubernetes_pod
+    - sourceLabels: [__meta_kubernetes_pod_label_region]
+      targetLabel: region
+    - sourceLabels: [__meta_kubernetes_pod_label_app_kubernetes_io_part_of]
+      targetLabel: component
+    - sourceLabels: [__meta_kubernetes_pod_label_app_kubernetes_io_instance]
+      targetLabel: instance
+
+
+
+
+

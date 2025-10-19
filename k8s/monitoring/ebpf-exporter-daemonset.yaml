@@ -1,0 +1,149 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: ebpf-exporter
+  namespace: cloudbridge-relay
+  labels:
+    app.kubernetes.io/component: exporter
+    app.kubernetes.io/instance: cloudbridge
+    app.kubernetes.io/name: ebpf-exporter
+    app.kubernetes.io/part-of: cloudbridge-edge-pops
+    app.kubernetes.io/version: 1.0.0
+spec:
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: exporter
+      app.kubernetes.io/instance: cloudbridge
+      app.kubernetes.io/name: ebpf-exporter
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: exporter
+        app.kubernetes.io/instance: cloudbridge
+        app.kubernetes.io/name: ebpf-exporter
+        app.kubernetes.io/part-of: cloudbridge-edge-pops
+        app.kubernetes.io/version: 1.0.0
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9435"
+        prometheus.io/path: "/metrics"
+    spec:
+      hostNetwork: true
+      hostPID: true
+      serviceAccountName: ebpf-exporter
+      securityContext:
+        runAsNonRoot: false
+        runAsUser: 0
+      containers:
+      - name: ebpf-exporter
+        image: cloudflare/ebpf_exporter:latest
+        ports:
+        - name: metrics
+          containerPort: 9435
+          protocol: TCP
+        resources:
+          limits:
+            cpu: 200m
+            memory: 128Mi
+          requests:
+            cpu: 100m
+            memory: 64Mi
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 9435
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 9435
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 3
+        securityContext:
+          runAsNonRoot: false
+          runAsUser: 0
+          allowPrivilegeEscalation: true
+          capabilities:
+            add:
+            - SYS_ADMIN
+            - NET_ADMIN
+            - SYS_PTRACE
+            - BPF
+        volumeMounts:
+        - name: sys
+          mountPath: /sys
+          readOnly: true
+        - name: debug
+          mountPath: /sys/kernel/debug
+          readOnly: true
+        - name: proc
+          mountPath: /proc
+          readOnly: true
+        - name: config
+          mountPath: /etc/ebpf_exporter
+          readOnly: true
+        - name: tmp
+          mountPath: /tmp
+      volumes:
+      - name: sys
+        hostPath:
+          path: /sys
+      - name: debug
+        hostPath:
+          path: /sys/kernel/debug
+      - name: proc
+        hostPath:
+          path: /proc
+      - name: config
+        configMap:
+          name: ebpf-exporter-config
+      - name: tmp
+        emptyDir: {}
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        operator: Exists
+        effect: NoSchedule
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
+        effect: NoSchedule
+      - key: cloudbridge.io/edge-pop
+        operator: Exists
+        effect: NoSchedule
+      nodeSelector:
+        kubernetes.io/os: linux
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ebpf-exporter
+  namespace: cloudbridge-relay
+  labels:
+    app.kubernetes.io/component: exporter
+    app.kubernetes.io/instance: cloudbridge
+    app.kubernetes.io/name: ebpf-exporter
+    app.kubernetes.io/part-of: cloudbridge-edge-pops
+spec:
+  type: ClusterIP
+  ports:
+  - name: metrics
+    port: 9435
+    targetPort: 9435
+    protocol: TCP
+  selector:
+    app.kubernetes.io/component: exporter
+    app.kubernetes.io/instance: cloudbridge
+    app.kubernetes.io/name: ebpf-exporter
+
+
+
+
+

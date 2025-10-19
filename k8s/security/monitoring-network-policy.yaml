@@ -1,0 +1,155 @@
+# NetworkPolicy для разрешения мониторинга Edge PoPs
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-prometheus-scrape-relay
+  namespace: cloudbridge-relay
+  labels:
+    app.kubernetes.io/component: relay
+    app.kubernetes.io/part-of: cloudbridge-edge-pops
+spec:
+  podSelector:
+    matchLabels:
+      app: cloudbridge-relay
+  policyTypes:
+  - Ingress
+  ingress:
+  # Разрешить Prometheus scraping метрик
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: cloudbridge-monitoring
+      podSelector:
+        matchLabels:
+          app: prometheus
+    ports:
+    - protocol: TCP
+      port: 5551
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dns-relay
+  namespace: cloudbridge-relay
+  labels:
+    app.kubernetes.io/component: relay
+    app.kubernetes.io/part-of: cloudbridge-edge-pops
+spec:
+  podSelector: {}
+  policyTypes:
+  - Egress
+  egress:
+  # Разрешить DNS lookups
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: kube-system
+    ports:
+    - protocol: UDP
+      port: 53
+    - protocol: TCP
+      port: 53
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-relay-inter-pop
+  namespace: cloudbridge-relay
+  labels:
+    app.kubernetes.io/component: relay
+    app.kubernetes.io/part-of: cloudbridge-edge-pops
+spec:
+  podSelector:
+    matchLabels:
+      app: cloudbridge-relay
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  # Разрешить MASQUE traffic между PoPs
+  - from:
+    - podSelector:
+        matchLabels:
+          app: cloudbridge-relay
+    ports:
+    - protocol: TCP
+      port: 443
+    - protocol: UDP
+      port: 9090
+  # Разрешить client connections
+  - from: []
+    ports:
+    - protocol: TCP
+      port: 5550
+    - protocol: TCP
+      port: 5553
+    - protocol: TCP
+      port: 5554
+    - protocol: UDP
+      port: 5555
+    - protocol: UDP
+      port: 19302
+    - protocol: TCP
+      port: 8443
+  egress:
+  # Разрешить Inter-PoP MASQUE connectivity
+  - to:
+    - podSelector:
+        matchLabels:
+          app: cloudbridge-relay
+    ports:
+    - protocol: TCP
+      port: 443
+    - protocol: UDP
+      port: 9090
+  # Разрешить доступ к Control Plane
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: cloudbridge
+      podSelector:
+        matchLabels:
+          app: cadence
+    ports:
+    - protocol: TCP
+      port: 7933
+    - protocol: TCP
+      port: 7934
+  # Разрешить доступ к AI Service
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: cloudbridge
+      podSelector:
+        matchLabels:
+          app: ai-service
+    ports:
+    - protocol: TCP
+      port: 8083
+    - protocol: TCP
+      port: 50051
+  # Разрешить доступ к Zitadel
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: cloudbridge
+      podSelector:
+        matchLabels:
+          app: zitadel
+    ports:
+    - protocol: TCP
+      port: 8080
+  # Разрешить внешние соединения (TURN, STUN, client traffic)
+  - to:
+    - namespaceSelector: {}
+    - podSelector: {}
+    ports:
+    - protocol: UDP
+      port: 3478
+    - protocol: TCP
+      port: 3478
+    - protocol: TCP
+      port: 443
+    - protocol: TCP
+      port: 80

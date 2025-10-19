@@ -1,0 +1,188 @@
+apiVersion: sloth.slok.dev/v1
+kind: PrometheusServiceLevel
+metadata:
+  name: cloudbridge-edge-pops-availability
+  namespace: cloudbridge-relay
+  labels:
+    app.kubernetes.io/component: slo
+    app.kubernetes.io/instance: cloudbridge
+    app.kubernetes.io/name: edge-pops-slo
+    app.kubernetes.io/part-of: cloudbridge-edge-pops
+spec:
+  service: "cloudbridge-edge-pops"
+  labels:
+    owner: "network-team"
+    tier: "production"
+    component: "edge-pops"
+  sli:
+    events:
+      errorQuery: |
+        sum(rate(relay_error_total[{{.window}}]))
+      totalQuery: |
+        sum(rate(relay_requests_total[{{.window}}]))
+  slos:
+    - name: "availability"
+      objective: 99.9
+      description: "Edge PoP availability"
+      alerting:
+        page:
+          quick:
+            errorBudgetPercent: 8
+            shortWindow: 5m
+            longWindow: 1h
+          slow:
+            errorBudgetPercent: 12.5
+            shortWindow: 30m
+            longWindow: 6h
+        ticket:
+          quick:
+            errorBudgetPercent: 20
+            shortWindow: 2h
+            longWindow: 1d
+          slow:
+            errorBudgetPercent: 42
+            shortWindow: 6h
+            longWindow: 3d
+---
+apiVersion: sloth.slok.dev/v1
+kind: PrometheusServiceLevel
+metadata:
+  name: cloudbridge-edge-pops-performance
+  namespace: cloudbridge-relay
+  labels:
+    app.kubernetes.io/component: slo
+    app.kubernetes.io/instance: cloudbridge
+    app.kubernetes.io/name: edge-pops-performance-slo
+    app.kubernetes.io/part-of: cloudbridge-edge-pops
+spec:
+  service: "cloudbridge-edge-pops-performance"
+  labels:
+    owner: "network-team"
+    tier: "production"
+    component: "edge-pops"
+  sli:
+    events:
+      errorQuery: |
+        sum(rate(relay_rtt_seconds_bucket{le="0.05"}[{{.window}}]))
+      totalQuery: |
+        sum(rate(relay_rtt_seconds_count[{{.window}}]))
+  slos:
+    - name: "latency"
+      objective: 99.5
+      description: "Edge PoP RTT under 50ms"
+      alerting:
+        page:
+          quick:
+            errorBudgetPercent: 8
+            shortWindow: 5m
+            longWindow: 1h
+          slow:
+            errorBudgetPercent: 12.5
+            shortWindow: 30m
+            longWindow: 6h
+        ticket:
+          quick:
+            errorBudgetPercent: 20
+            shortWindow: 2h
+            longWindow: 1d
+          slow:
+            errorBudgetPercent: 42
+            shortWindow: 6h
+            longWindow: 3d
+---
+apiVersion: sloth.slok.dev/v1
+kind: PrometheusServiceLevel
+metadata:
+  name: cloudbridge-inter-pop-connectivity
+  namespace: cloudbridge-relay
+  labels:
+    app.kubernetes.io/component: slo
+    app.kubernetes.io/instance: cloudbridge
+    app.kubernetes.io/name: inter-pop-slo
+    app.kubernetes.io/part-of: cloudbridge-edge-pops
+spec:
+  service: "cloudbridge-inter-pop"
+  labels:
+    owner: "network-team"
+    tier: "production"
+    component: "inter-pop"
+  sli:
+    events:
+      errorQuery: |
+        sum(rate(relay_inter_pop_connectivity_failures_total[{{.window}}]))
+      totalQuery: |
+        sum(rate(relay_inter_pop_connectivity_total[{{.window}}]))
+  slos:
+    - name: "connectivity"
+      objective: 99.5
+      description: "Inter-PoP connectivity"
+      alerting:
+        page:
+          quick:
+            errorBudgetPercent: 5
+            shortWindow: 2m
+            longWindow: 30m
+          slow:
+            errorBudgetPercent: 8
+            shortWindow: 10m
+            longWindow: 2h
+        ticket:
+          quick:
+            errorBudgetPercent: 15
+            shortWindow: 1h
+            longWindow: 6h
+          slow:
+            errorBudgetPercent: 25
+            shortWindow: 3h
+            longWindow: 12h
+---
+apiVersion: sloth.slok.dev/v1
+kind: PrometheusServiceLevel
+metadata:
+  name: cloudbridge-masque-contexts
+  namespace: cloudbridge-relay
+  labels:
+    app.kubernetes.io/component: slo
+    app.kubernetes.io/instance: cloudbridge
+    app.kubernetes.io/name: masque-slo
+    app.kubernetes.io/part-of: cloudbridge-edge-pops
+spec:
+  service: "cloudbridge-masque"
+  labels:
+    owner: "network-team"
+    tier: "production"
+    component: "masque"
+  sli:
+    events:
+      errorQuery: |
+        sum(rate(relay_masque_context_failures_total[{{.window}}]))
+      totalQuery: |
+        sum(rate(relay_masque_context_total[{{.window}}]))
+  slos:
+    - name: "masque-availability"
+      objective: 99.0
+      description: "MASQUE context availability"
+      alerting:
+        page:
+          quick:
+            errorBudgetPercent: 10
+            shortWindow: 1m
+            longWindow: 15m
+          slow:
+            errorBudgetPercent: 15
+            shortWindow: 5m
+            longWindow: 1h
+        ticket:
+          quick:
+            errorBudgetPercent: 25
+            shortWindow: 30m
+            longWindow: 3h
+          slow:
+            errorBudgetPercent: 40
+            shortWindow: 1h
+            longWindow: 6h
+
+
+
+
+

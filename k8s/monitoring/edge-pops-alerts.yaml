@@ -1,0 +1,163 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: edge-pops-alerts
+  namespace: cloudbridge-relay
+  labels:
+    app.kubernetes.io/component: alerting
+    app.kubernetes.io/instance: cloudbridge
+    app.kubernetes.io/name: edge-pops-alerts
+    app.kubernetes.io/part-of: cloudbridge-edge-pops
+    release: prometheus-stack
+spec:
+  groups:
+  - name: edge-pops.rules
+    rules:
+    - alert: EdgePopDown
+      expr: up{job="relay"} == 0
+      for: 5m
+      labels:
+        severity: critical
+        team: network
+        component: edge-pops
+      annotations:
+        summary: "Edge PoP {{ $labels.instance }} is down"
+        description: "Edge PoP {{ $labels.instance }} in region {{ $labels.region }} has been down for more than 5 minutes."
+        runbook_url: "https://docs.cloudbridge.internal/runbooks/edge-pop-down"
+    
+    - alert: EdgePopHighLatency
+      expr: histogram_quantile(0.95, rate(relay_rtt_seconds_bucket[5m])) > 0.05
+      for: 2m
+      labels:
+        severity: warning
+        team: network
+        component: edge-pops
+      annotations:
+        summary: "Edge PoP {{ $labels.instance }} high latency"
+        description: "Edge PoP {{ $labels.instance }} in region {{ $labels.region }} RTT p95 is above 50ms."
+        runbook_url: "https://docs.cloudbridge.internal/runbooks/high-latency"
+    
+    - alert: EdgePopHighErrorRate
+      expr: rate(relay_error_total[5m]) / rate(relay_requests_total[5m]) > 0.01
+      for: 2m
+      labels:
+        severity: warning
+        team: network
+        component: edge-pops
+      annotations:
+        summary: "Edge PoP {{ $labels.instance }} high error rate"
+        description: "Edge PoP {{ $labels.instance }} in region {{ $labels.region }} error rate is above 1%."
+        runbook_url: "https://docs.cloudbridge.internal/runbooks/high-error-rate"
+    
+    - alert: InterPopConnectivityDown
+      expr: relay_inter_pop_connectivity == 0
+      for: 1m
+      labels:
+        severity: critical
+        team: network
+        component: inter-pop
+      annotations:
+        summary: "Inter-PoP connectivity down for {{ $labels.instance }}"
+        description: "Inter-PoP connectivity from {{ $labels.source_region }} to {{ $labels.target_region }} is down."
+        runbook_url: "https://docs.cloudbridge.internal/runbooks/inter-pop-connectivity"
+    
+    - alert: InterPopHighLatency
+      expr: relay_inter_pop_rtt_seconds > 0.1
+      for: 2m
+      labels:
+        severity: warning
+        team: network
+        component: inter-pop
+      annotations:
+        summary: "Inter-PoP high latency between {{ $labels.source_region }} and {{ $labels.target_region }}"
+        description: "Inter-PoP RTT between {{ $labels.source_region }} and {{ $labels.target_region }} is above 100ms."
+        runbook_url: "https://docs.cloudbridge.internal/runbooks/inter-pop-latency"
+    
+    - alert: MasqueContextLimit
+      expr: relay_masque_contexts_active / relay_masque_contexts_max > 0.9
+      for: 5m
+      labels:
+        severity: warning
+        team: network
+        component: masque
+      annotations:
+        summary: "MASQUE context limit reached for {{ $labels.instance }}"
+        description: "MASQUE contexts usage is above 90% for {{ $labels.instance }} in region {{ $labels.region }}."
+        runbook_url: "https://docs.cloudbridge.internal/runbooks/masque-context-limit"
+    
+    - alert: MasqueContextFailure
+      expr: rate(relay_masque_context_failures_total[5m]) > 0.1
+      for: 2m
+      labels:
+        severity: warning
+        team: network
+        component: masque
+      annotations:
+        summary: "MASQUE context failures for {{ $labels.instance }}"
+        description: "MASQUE context failure rate is above 0.1/s for {{ $labels.instance }} in region {{ $labels.region }}."
+        runbook_url: "https://docs.cloudbridge.internal/runbooks/masque-failures"
+    
+    - alert: HandoverDurationHigh
+      expr: histogram_quantile(0.95, rate(relay_handover_duration_seconds_bucket[5m])) > 0.3
+      for: 2m
+      labels:
+        severity: warning
+        team: network
+        component: handover
+      annotations:
+        summary: "High handover duration for {{ $labels.instance }}"
+        description: "Handover duration p95 is above 300ms for {{ $labels.instance }} in region {{ $labels.region }}."
+        runbook_url: "https://docs.cloudbridge.internal/runbooks/handover-duration"
+    
+    - alert: P2PRatioLow
+      expr: relay_p2p_percentage < 60
+      for: 5m
+      labels:
+        severity: warning
+        team: network
+        component: p2p
+      annotations:
+        summary: "Low P2P ratio for {{ $labels.instance }}"
+        description: "P2P ratio is below 60% for {{ $labels.instance }} in region {{ $labels.region }}."
+        runbook_url: "https://docs.cloudbridge.internal/runbooks/p2p-ratio"
+    
+    - alert: ThroughputLow
+      expr: rate(relay_throughput_bytes_total[5m]) < 1000000000
+      for: 5m
+      labels:
+        severity: warning
+        team: network
+        component: throughput
+      annotations:
+        summary: "Low throughput for {{ $labels.instance }}"
+        description: "Throughput is below 1Gbps for {{ $labels.instance }} in region {{ $labels.region }}."
+        runbook_url: "https://docs.cloudbridge.internal/runbooks/low-throughput"
+    
+    - alert: TenantIsolationFailure
+      expr: relay_tenant_isolation_violations_total > 0
+      for: 0m
+      labels:
+        severity: critical
+        team: security
+        component: tenant-isolation
+      annotations:
+        summary: "Tenant isolation violation detected for {{ $labels.instance }}"
+        description: "Tenant isolation violation detected for {{ $labels.instance }} in region {{ $labels.region }}. This is a critical security issue."
+        runbook_url: "https://docs.cloudbridge.internal/runbooks/tenant-isolation"
+    
+    - alert: TLSConnectionFailure
+      expr: rate(relay_tls_connection_failures_total[5m]) > 0.01
+      for: 2m
+      labels:
+        severity: warning
+        team: security
+        component: tls
+      annotations:
+        summary: "TLS connection failures for {{ $labels.instance }}"
+        description: "TLS connection failure rate is above 0.01/s for {{ $labels.instance }} in region {{ $labels.region }}."
+        runbook_url: "https://docs.cloudbridge.internal/runbooks/tls-failures"
+
+
+
+
+
