@@ -1,8 +1,25 @@
-# CloudBridge Edge PoP Nodes
+# 🏗️ CloudBridge PoP Fabric
 
-Edge PoP узлы CloudBridge Relay с Inter-PoP MASQUE связностью, умной маршрутизацией и tenant изоляцией.
+**Распределённая инфраструктура PoP и балансировка нагрузки** для 2GC CloudBridge Global Network.
+
+> **CloudBridge PoP Fabric** — фабрика, которая строит сеть, обеспечивая глобальное покрытие через распределённые точки присутствия с интеллектуальной балансировкой нагрузки и автоматическим масштабированием.
 
 ## Назначение
+
+**CloudBridge PoP Fabric** — это компонент **Core Platform Layer** экосистемы 2GC CloudBridge Global Network, обеспечивающий:
+
+## 🌐 Экосистема CloudBridge
+
+**CloudBridge PoP Fabric** является частью **2GC CloudBridge Global Network**:
+
+- **Core Platform Layer**: CloudBridge Relay, CloudBridge DNS, **CloudBridge PoP Fabric** 🏗️
+- **Security Layer**: CloudBridge Aegis, CloudBridge Access, CloudBridge Guard-Rails
+- **Intelligence Layer**: CloudBridge Neural, CloudBridge Radar
+- **R&D Layer**: CloudBridge Quantum
+
+[Подробнее об экосистеме](https://github.com/twogc/cloudbridge-relay-installer/blob/main/docs/ECOSYSTEM_BRANDING.md)
+
+## Функциональность
 
 Этот репозиторий содержит конфигурации для Edge PoP узлов CloudBridge Relay:
 
