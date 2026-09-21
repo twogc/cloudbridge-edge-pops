@@ -6,13 +6,13 @@
 
 ## Текущее состояние
 
-### ✅ Что уже готово:
+### Что уже готово:
 - **Структура репозитория** - организована по регионам (MOW, FRA, AMS)
 - **Kubernetes конфигурации** - готовы deployment'ы для каждого PoP
 - **Скрипт развертывания** - `deploy-edge-pops.sh` для автоматизации
 - **README.md** - подробная документация с архитектурой
 
-### ❌ Что нужно доработать:
+### Что нужно доработать:
 - **MASQUE конфигурации** - папка `masque/` пустая
 - **Документация** - папка `docs/` пустая
 - **Тестовые скрипты** - отсутствуют
@@ -20,7 +20,7 @@
 
 ## План действий
 
-### 🚀 **Этап 1: Критические компоненты (Неделя 1)**
+### **Этап 1: Критические компоненты (Неделя 1)**
 
 #### **1.1 MASQUE конфигурации**
 ```bash
@@ -46,18 +46,18 @@ data:
       bbrv2: true
       ack_frequency: true
       keepalive: 10s
-    
+
     mtls:
       enabled: true
       ca_secret: cb-ca-bundle
       cert_secret: cb-interpop-cert
-    
+
     masque:
       connect_udp: true
       connect_ip: true
       max_contexts: 16384
       tenant_header: x-cb-tenant
-    
+
     neighbors:
       - name: "EU-FRA"
         endpoint: "fra.pop.cb:443"
@@ -116,7 +116,7 @@ data:
   ca.crt: <base64-encoded-ca>
 ```
 
-### 📚 **Этап 2: Документация (Неделя 2)**
+### **Этап 2: Документация (Неделя 2)**
 
 #### **2.1 Создать структуру документации**
 ```bash
@@ -145,7 +145,7 @@ Inter-PoP MASQUE обеспечивает связность между Edge PoP
 
 ## Neighbors
 - Moscow PoP (RU-MOW)
-- Frankfurt PoP (EU-FRA)  
+- Frankfurt PoP (EU-FRA)
 - Amsterdam PoP (EU-AMS)
 
 ## Testing
@@ -198,7 +198,7 @@ kubectl exec -n cloudbridge-relay deployment/relay-mow -- \
 ```
 ```
 
-### 🧪 **Этап 3: Тестирование (Неделя 3)**
+### **Этап 3: Тестирование (Неделя 3)**
 
 #### **3.1 Создать тестовые скрипты**
 ```bash
@@ -218,7 +218,7 @@ touch scripts/test-handover.sh
 #!/bin/bash
 # Тестирование Inter-PoP связности
 
-echo "🔗 Тестирование Inter-PoP связности..."
+echo " Тестирование Inter-PoP связности..."
 
 # Тест Moscow -> Frankfurt
 kubectl exec -n cloudbridge-relay deployment/relay-mow -- \
@@ -232,7 +232,7 @@ kubectl exec -n cloudbridge-relay deployment/relay-mow -- \
   -H "Content-Type: application/json" \
   -d '{"source": "MOW", "targets": ["AMS"]}'
 
-echo "✅ Inter-PoP тесты завершены"
+echo " Inter-PoP тесты завершены"
 ```
 
 **`scripts/test-masque.sh`:**
@@ -240,7 +240,7 @@ echo "✅ Inter-PoP тесты завершены"
 #!/bin/bash
 # Тестирование MASQUE функциональности
 
-echo "🔗 Тестирование MASQUE..."
+echo " Тестирование MASQUE..."
 
 # Тест MASQUE контекстов
 kubectl exec -n cloudbridge-relay deployment/relay-mow -- \
@@ -250,10 +250,10 @@ kubectl exec -n cloudbridge-relay deployment/relay-mow -- \
 kubectl exec -n cloudbridge-relay deployment/relay-mow -- \
   curl -X GET http://localhost:9090/api/masque/stats
 
-echo "✅ MASQUE тесты завершены"
+echo " MASQUE тесты завершены"
 ```
 
-### 📊 **Этап 4: Мониторинг (Неделя 4)**
+### **Этап 4: Мониторинг (Неделя 4)**
 
 #### **4.1 Prometheus конфигурация**
 ```yaml
@@ -316,64 +316,64 @@ data:
 
 ## Ожидаемые результаты
 
-### 🎯 **Краткосрочные результаты (1-2 недели):**
+### **Краткосрочные результаты (1-2 недели):**
 
 #### **Функциональность:**
-- ✅ **3 Edge PoP узла** развернуты и работают
-- ✅ **Inter-PoP MASQUE связность** между всеми узлами
-- ✅ **Tenant isolation** через Calico Network Policies
-- ✅ **mTLS безопасность** между PoP узлами
+- **3 Edge PoP узла** развернуты и работают
+- **Inter-PoP MASQUE связность** между всеми узлами
+- **Tenant isolation** через Calico Network Policies
+- **mTLS безопасность** между PoP узлами
 
 #### **Операции:**
-- ✅ **Автоматизированное развертывание** через скрипты
-- ✅ **Health checks** для всех компонентов
-- ✅ **Rolling updates** без простоя
-- ✅ **Масштабирование** по требованию
+- **Автоматизированное развертывание** через скрипты
+- **Health checks** для всех компонентов
+- **Rolling updates** без простоя
+- **Масштабирование** по требованию
 
-### 🚀 **Среднесрочные результаты (3-4 недели):**
+### **Среднесрочные результаты (3-4 недели):**
 
 #### **Мониторинг:**
-- ✅ **Prometheus метрики** для всех ключевых показателей
-- ✅ **Grafana дашборды** для визуализации
-- ✅ **Алерты** при превышении SLO
-- ✅ **Логирование** для troubleshooting
+- **Prometheus метрики** для всех ключевых показателей
+- **Grafana дашборды** для визуализации
+- **Алерты** при превышении SLO
+- **Логирование** для troubleshooting
 
 #### **Тестирование:**
-- ✅ **Автоматизированные тесты** связности
-- ✅ **Load testing** для проверки производительности
-- ✅ **Chaos testing** для проверки отказоустойчивости
-- ✅ **Integration testing** с Control Plane
+- **Автоматизированные тесты** связности
+- **Load testing** для проверки производительности
+- **Chaos testing** для проверки отказоустойчивости
+- **Integration testing** с Control Plane
 
-### 🏆 **Долгосрочные результаты (1-2 месяца):**
+### **Долгосрочные результаты (1-2 месяца):**
 
 #### **Production Ready:**
-- ✅ **SLO compliance** - все метрики в пределах целевых значений
-- ✅ **High availability** - 99.9% uptime
-- ✅ **Performance** - RTT < 50ms, throughput > 1Gbps
-- ✅ **Security** - полная изоляция tenant'ов
+- **SLO compliance** - все метрики в пределах целевых значений
+- **High availability** - 99.9% uptime
+- **Performance** - RTT < 50ms, throughput > 1Gbps
+- **Security** - полная изоляция tenant'ов
 
 #### **Масштабирование:**
-- ✅ **Горизонтальное масштабирование** PoP узлов
-- ✅ **Географическое расширение** в новые регионы
-- ✅ **Load balancing** между PoP узлами
-- ✅ **Smart routing** на основе AI/ML
+- **Горизонтальное масштабирование** PoP узлов
+- **Географическое расширение** в новые регионы
+- **Load balancing** между PoP узлами
+- **Smart routing** на основе AI/ML
 
 ## Критерии успеха
 
-### 📊 **Технические метрики:**
+### **Технические метрики:**
 - **RTT p95** < 50ms между PoP
 - **Handover p95** < 300ms
 - **P2P %** ≥ 60% соединений
 - **Error rate** < 1%
 - **Throughput** > 1Gbps
 
-### 🎯 **Бизнес метрики:**
+### **Бизнес метрики:**
 - **Uptime** ≥ 99.9%
 - **Deployment time** < 10 минут
 - **Recovery time** < 5 минут
 - **Cost efficiency** - оптимизация ресурсов
 
-### 🔒 **Безопасность:**
+### **Безопасность:**
 - **Tenant isolation** - 100% изоляция
 - **mTLS** - все меж-PoP соединения
 - **Network policies** - полная защита
@@ -398,5 +398,5 @@ data:
 - **Автоматизированное тестирование** и развертывание
 - **Полную документацию** для операций
 
-**Результат**: Готовая к production Edge PoP инфраструктура с полной документацией, тестированием и мониторингом! 🚀
+**Результат**: Готовая к production Edge PoP инфраструктура с полной документацией, тестированием и мониторингом!
 

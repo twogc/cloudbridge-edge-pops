@@ -9,24 +9,24 @@
 ```mermaid
 graph TB
     subgraph "Edge PoP Nodes"
-        M[🏢 Moscow PoP<br/>Metrics: 9091<br/>Health: /health<br/>MASQUE: 9090]
-        F[🏢 Frankfurt PoP<br/>Metrics: 9091<br/>Health: /health<br/>MASQUE: 9090]
-        A[🏢 Amsterdam PoP<br/>Metrics: 9091<br/>Health: /health<br/>MASQUE: 9090]
+        M[ Moscow PoP<br/>Metrics: 9091<br/>Health: /health<br/>MASQUE: 9090]
+        F[ Frankfurt PoP<br/>Metrics: 9091<br/>Health: /health<br/>MASQUE: 9090]
+        A[ Amsterdam PoP<br/>Metrics: 9091<br/>Health: /health<br/>MASQUE: 9090]
     end
-    
+
     subgraph "Monitoring Stack"
         P[Prometheus<br/>Scrape: 15s<br/>Retention: 30d<br/>Rules: edge-pops-alerts]
         AM[Alertmanager<br/>Routes: critical/warning<br/>Receivers: email/slack<br/>Grouping: alertname,region]
         G[Grafana<br/>Dashboards: Edge PoP<br/>Panels: RTT, Handover, P2P<br/>Alerts: Visual]
     end
-    
+
     M -->|Metrics| P
     F -->|Metrics| P
     A -->|Metrics| P
-    
+
     P -->|Alerts| AM
     AM -->|Notifications| G
-    
+
     P -->|Data| G
 ```
 
@@ -76,7 +76,7 @@ global:
 scrape_configs:
 - job_name: 'edge-pops'
   static_configs:
-    - targets: 
+    - targets:
       - 'relay-mow:9091'
       - 'relay-fra:9091'
       - 'relay-ams:9091'
@@ -129,7 +129,7 @@ groups:
       summary: "PoP узел недоступен"
       description: "PoP узел {{ $labels.instance }} недоступен"
       runbook_url: "https://docs.2gc.ru/runbooks/pop-down"
-  
+
   - alert: HandoverTimeout
     expr: relay_handover_duration_seconds > 0.3
     for: 2m
@@ -140,7 +140,7 @@ groups:
       summary: "Handover превысил 300ms"
       description: "Handover для региона {{ $labels.region }} составляет {{ $value }}s"
       runbook_url: "https://docs.2gc.ru/runbooks/handover-timeout"
-  
+
   - alert: HighErrorRate
     expr: relay_error_rate > 0.01
     for: 5m
@@ -169,7 +169,7 @@ groups:
       summary: "RTT между PoP превысил 50ms"
       description: "RTT для региона {{ $labels.region }} составляет {{ $value }}s"
       runbook_url: "https://docs.2gc.ru/runbooks/high-rtt"
-  
+
   - alert: LowP2PRatio
     expr: relay_p2p_percentage < 60
     for: 10m
@@ -180,7 +180,7 @@ groups:
       summary: "P2P соединения ниже 60%"
       description: "P2P процент для региона {{ $labels.region }} составляет {{ $value }}%"
       runbook_url: "https://docs.2gc.ru/runbooks/low-p2p-ratio"
-  
+
   - alert: LowThroughput
     expr: relay_throughput_bytes < 1000000000
     for: 10m

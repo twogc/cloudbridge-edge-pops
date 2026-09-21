@@ -9,27 +9,27 @@ Inter-PoP MASQUE обеспечивает связность между Edge PoP
 ```mermaid
 graph TB
     subgraph "Edge PoP Nodes"
-        M[🏢 Moscow PoP<br/>mow.pop.cb:443<br/>RU-MOW<br/>Weight: 80<br/>Priority: 3]
-        F[🏢 Frankfurt PoP<br/>fra.pop.cb:443<br/>EU-FRA<br/>Weight: 100<br/>Priority: 1]
-        A[🏢 Amsterdam PoP<br/>ams.pop.cb:443<br/>EU-AMS<br/>Weight: 90<br/>Priority: 2]
+        M[ Moscow PoP<br/>mow.pop.cb:443<br/>RU-MOW<br/>Weight: 80<br/>Priority: 3]
+        F[ Frankfurt PoP<br/>fra.pop.cb:443<br/>EU-FRA<br/>Weight: 100<br/>Priority: 1]
+        A[ Amsterdam PoP<br/>ams.pop.cb:443<br/>EU-AMS<br/>Weight: 90<br/>Priority: 2]
     end
-    
+
     subgraph "MASQUE Configuration"
         MC[MASQUE Config<br/>Port: 9090/UDP<br/>mTLS: Enabled<br/>Contexts: 16384<br/>Tenant Header: x-cb-tenant]
     end
-    
+
     subgraph "AI Routing"
         AI[AI Service<br/>ai.2gc.ru:8083<br/>Algorithm: ai_optimized<br/>Fallback: latency_based]
     end
-    
+
     M <-->|MASQUE| F
     F <-->|MASQUE| A
     A <-->|MASQUE| M
-    
+
     MC --> M
     MC --> F
     MC --> A
-    
+
     AI --> M
     AI --> F
     AI --> A

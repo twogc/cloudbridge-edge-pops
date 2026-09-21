@@ -1,13 +1,13 @@
 # Практичная архитектура CloudBridge для домашних сетей
 
-## 🏠 Домашняя архитектура (end-to-end)
+## Домашняя архитектура (end-to-end)
 
 ```mermaid
 flowchart LR
   U[Игровой ПК / ТВ-приставка / Смарт-ТВ] -->|LAN 1/2.5/10G| HGW[Домашний роутер<br/>SQM (CAKE/fq_codel)]
   HGW -->|QUIC :443/UDP| POP[Edge PoP (MOW/FRA/AMS)<br/>Anycast + MASQUE + BBRv2 + FEC]
   POP -->|Smart Routing / Inter-PoP| CORE[CloudBridge Core / Upstream CDN/Игра]
-  
+
   subgraph Home
     U
     HGW
@@ -18,15 +18,15 @@ flowchart LR
   end
 ```
 
-## 🔧 SQM конфигурации для популярных роутеров
+## SQM конфигурации для популярных роутеров
 
 ### **OpenWrt (CAKE)**
 ```bash
 # /etc/config/qos
 config qos
     option enabled '1'
-    option download '850000'  # 85% от канала
-    option upload '850000'    # 85% от канала
+    option download '850000' # 85% от канала
+    option upload '850000' # 85% от канала
     option qdisc 'cake'
     option script 'piece_of_cake.qos'
 
@@ -62,13 +62,13 @@ tc class add dev eth0 parent 1:1 classid 1:30 htb rate 250mbit ceil 200mbit prio
 
 # Gaming queue
 tc qdisc add dev eth0 parent 1:10 fq_codel quantum 300 limit 1024
-# Streaming queue  
+# Streaming queue
 tc qdisc add dev eth0 parent 1:20 fq_codel quantum 300 limit 1024
 # Default queue
 tc qdisc add dev eth0 parent 1:30 fq_codel quantum 300 limit 1024
 ```
 
-## 📱 Мобильные сети - MP-QUIC + L4S
+## Мобильные сети - MP-QUIC + L4S
 
 ```mermaid
 flowchart LR
@@ -76,7 +76,7 @@ flowchart LR
   M -->|Failover| WiFi[Wi-Fi Calling/Домашний Wi-Fi]
   EP -->|MASQUE Smart Routing| Backbone[Backbone/Inter-PoP]
   EP --> CDN[CDN/Игровой сервер]
-  
+
   subgraph RAN/Core
     gNB[Базовая станция / gNB]
     UPF[UPF/5GC]
@@ -84,7 +84,7 @@ flowchart LR
   M --> gNB --> UPF --> EP
 ```
 
-## 🎮 Профили настроек
+## Профили настроек
 
 ### **Gaming Profile**
 ```yaml
@@ -102,13 +102,13 @@ data:
     fec_enabled: false
     target_rtt: 20ms
     max_rtt: 50ms
-    
+
   masque_config.yaml: |
     smart_routing: true
     fallback_threshold: 45ms
     handover_hysteresis: 10ms
     max_handovers_per_hour: 3
-    
+
   dscp_marking:
     gaming: "CS6"
     voice: "EF"
@@ -132,7 +132,7 @@ data:
     fec_overhead: 8
     target_rtt: 30ms
     max_rtt: 100ms
-    
+
   abr_config.yaml: |
     algorithm: "bola"
     prefetch_segments: 4
@@ -141,7 +141,7 @@ data:
     rebuffer_limit: 0.2/hour
 ```
 
-## 📊 SLO метрики для домашних сетей
+## SLO метрики для домашних сетей
 
 | Метрика | Домашние сети | Мобильные сети | Критичность |
 |---------|---------------|----------------|-------------|
@@ -154,7 +154,7 @@ data:
 | `rebuffer_events` | < 0.2/hour | < 0.5/hour | High |
 | `ping_spike_rate` | < 2/5min | < 3/5min | Medium |
 
-## 🚨 Алерты для праймтайма
+## Алерты для праймтайма
 
 ```yaml
 # prometheus/prime-time-alerts.yaml
@@ -170,7 +170,7 @@ groups:
     annotations:
       summary: "High RTT from home to PoP"
       description: "RTT p95 is {{ $value }}s, threshold is 25ms"
-      
+
   - alert: MobileCongestion
     expr: relay_radio_congestion_score > 0.7
     for: 1m
@@ -180,7 +180,7 @@ groups:
     annotations:
       summary: "Mobile radio congestion detected"
       description: "Congestion score is {{ $value }}, consider handover"
-      
+
   - alert: StreamingStall
     expr: relay_stall_ratio > 0.003
     for: 5m
@@ -192,7 +192,7 @@ groups:
       description: "Stall ratio is {{ $value }}%, threshold is 0.3%"
 ```
 
-## 🔄 Автоматические переключения
+## Автоматические переключения
 
 ### **Handover Policy**
 ```yaml
@@ -206,13 +206,13 @@ spec:
     - metric: "rtt_p95"
       threshold: 45ms
       duration: 30s
-    - metric: "loss_ratio" 
+    - metric: "loss_ratio"
       threshold: 0.7%
       duration: 15s
     - metric: "jitter_p95"
       threshold: 12ms
       duration: 20s
-      
+
   actions:
     - type: "pop_switch"
       target: "nearest_available"
@@ -220,13 +220,13 @@ spec:
     - type: "path_switch"
       target: "masque_tunnel"
       cooldown: 60s
-      
+
   limits:
     max_handovers_per_hour: 3
     max_handovers_per_day: 10
 ```
 
-## 📈 Мониторинг эффективности
+## Мониторинг эффективности
 
 ### **Grafana Dashboard - Home Networks**
 ```json
@@ -262,7 +262,7 @@ spec:
 }
 ```
 
-## 🛠️ Быстрый чек-лист внедрения
+## Быстрый чек-лист внедрения
 
 ### **Домашний сегмент**
 - [ ] Включить **SQM (CAKE)** на роутере, лимит 85-90% канала
@@ -279,7 +279,7 @@ spec:
 - [ ] Edge PoP **рядом с UPF** (минимальный core-RTT)
 - [ ] MASQUE для объезда перегрузок, алерты по `ping_spike_rate`
 
-## 🎯 Готовые пресеты
+## Готовые пресеты
 
 ### **Gaming Profile**
 - QUIC: BBRv2, cwnd conservative старт, ACK-freq ↑

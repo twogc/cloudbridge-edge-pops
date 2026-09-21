@@ -1,4 +1,4 @@
-# 🏗️ CloudBridge PoP Fabric
+# CloudBridge PoP Fabric
 
 **Распределённая инфраструктура PoP и балансировка нагрузки** для 2GC CloudBridge Global Network.
 
@@ -8,11 +8,11 @@
 
 **CloudBridge PoP Fabric** — это компонент **Core Platform Layer** экосистемы 2GC CloudBridge Global Network, обеспечивающий:
 
-## 🌐 Экосистема CloudBridge
+## Экосистема CloudBridge
 
 **CloudBridge PoP Fabric** является частью **2GC CloudBridge Global Network**:
 
-- **Core Platform Layer**: CloudBridge Relay, CloudBridge DNS, **CloudBridge PoP Fabric** 🏗️
+- **Core Platform Layer**: CloudBridge Relay, CloudBridge DNS, **CloudBridge PoP Fabric**
 - **Security Layer**: CloudBridge Aegis, CloudBridge Access, CloudBridge Guard-Rails
 - **Intelligence Layer**: CloudBridge Neural, CloudBridge Radar
 - **R&D Layer**: CloudBridge Quantum
@@ -23,43 +23,43 @@
 
 Этот репозиторий содержит конфигурации для Edge PoP узлов CloudBridge Relay:
 
-- **🏢 Moscow PoP** - RU-MOW региональный узел
-- **🏢 Frankfurt PoP** - EU-FRA региональный узел  
-- **🏢 Amsterdam PoP** - EU-AMS региональный узел
-- **🔗 Inter-PoP MASQUE** - QUIC/MASQUE связность между PoP
-- **🛡️ Tenant Isolation** - VRF и Calico Network Policies
-- **📊 Metrics Export** - Экспорт метрик для мониторинга
+- ** Moscow PoP** - RU-MOW региональный узел
+- ** Frankfurt PoP** - EU-FRA региональный узел
+- ** Amsterdam PoP** - EU-AMS региональный узел
+- ** Inter-PoP MASQUE** - QUIC/MASQUE связность между PoP
+- ** Tenant Isolation** - VRF и Calico Network Policies
+- ** Metrics Export** - Экспорт метрик для мониторинга
 
 ## Архитектура Edge PoP
 
 ```mermaid
 graph TB
     subgraph "Edge PoP Nodes"
-        M[🏢 Moscow PoP<br/>mow.pop.cb:443<br/>RU-MOW<br/>QUIC Server: 443/UDP<br/>WireGuard: 51820/UDP<br/>TURN Server: 3478/UDP]
-        F[🏢 Frankfurt PoP<br/>fra.pop.cb:443<br/>EU-FRA<br/>QUIC Server: 443/UDP<br/>WireGuard: 51820/UDP<br/>TURN Server: 3478/UDP]
-        A[🏢 Amsterdam PoP<br/>ams.pop.cb:443<br/>EU-AMS<br/>QUIC Server: 443/UDP<br/>WireGuard: 51820/UDP<br/>TURN Server: 3478/UDP]
+        M[ Moscow PoP<br/>mow.pop.cb:443<br/>RU-MOW<br/>QUIC Server: 443/UDP<br/>WireGuard: 51820/UDP<br/>TURN Server: 3478/UDP]
+        F[ Frankfurt PoP<br/>fra.pop.cb:443<br/>EU-FRA<br/>QUIC Server: 443/UDP<br/>WireGuard: 51820/UDP<br/>TURN Server: 3478/UDP]
+        A[ Amsterdam PoP<br/>ams.pop.cb:443<br/>EU-AMS<br/>QUIC Server: 443/UDP<br/>WireGuard: 51820/UDP<br/>TURN Server: 3478/UDP]
     end
-    
+
     subgraph "Inter-PoP Mesh"
         MESH[MASQUE/QUIC<br/>Contexts<br/>mTLS Secured<br/>Smart Routing]
     end
-    
+
     subgraph "Control Plane"
-        CP[🏛️ Control Plane<br/>Zitadel, Cadence<br/>PostgreSQL, Redis<br/>AI Service]
+        CP[ Control Plane<br/>Zitadel, Cadence<br/>PostgreSQL, Redis<br/>AI Service]
     end
-    
+
     M <-->|MESH| F
     F <-->|MESH| A
     A <-->|MESH| M
-    
+
     CP --> M
     CP --> F
     CP --> A
-    
+
     classDef pop fill:#f3e5f5,stroke:#7b1fa2,stroke-width:3px
     classDef mesh fill:#e8f5e8,stroke:#388e3c,stroke-width:3px
     classDef control fill:#e3f2fd,stroke:#1976d2,stroke-width:3px
-    
+
     class M,F,A pop
     class MESH mesh
     class CP control
@@ -188,18 +188,18 @@ data:
       bbrv2: true
       ack_frequency: true
       keepalive: 10s
-    
+
     mtls:
       enabled: true
       ca_secret: cb-ca-bundle
       cert_secret: cb-interpop-cert
-    
+
     masque:
       connect_udp: true
       connect_ip: true
       max_contexts: 16384
       tenant_header: x-cb-tenant
-    
+
     neighbors:
       - name: "EU-FRA"
         endpoint: "fra.pop.cb:443"

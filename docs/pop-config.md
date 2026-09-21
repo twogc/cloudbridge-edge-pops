@@ -9,26 +9,26 @@
 ```mermaid
 graph TB
     subgraph "Moscow PoP (RU-MOW)"
-        M[🏢 Moscow PoP<br/>mow.pop.cb:443<br/>QUIC: 443/UDP<br/>WireGuard: 51820/UDP<br/>TURN: 3478/UDP<br/>STUN: 19302/UDP]
+        M[ Moscow PoP<br/>mow.pop.cb:443<br/>QUIC: 443/UDP<br/>WireGuard: 51820/UDP<br/>TURN: 3478/UDP<br/>STUN: 19302/UDP]
     end
-    
+
     subgraph "Frankfurt PoP (EU-FRA)"
-        F[🏢 Frankfurt PoP<br/>fra.pop.cb:443<br/>QUIC: 443/UDP<br/>WireGuard: 51820/UDP<br/>TURN: 3478/UDP<br/>STUN: 19302/UDP]
+        F[ Frankfurt PoP<br/>fra.pop.cb:443<br/>QUIC: 443/UDP<br/>WireGuard: 51820/UDP<br/>TURN: 3478/UDP<br/>STUN: 19302/UDP]
     end
-    
+
     subgraph "Amsterdam PoP (EU-AMS)"
-        A[🏢 Amsterdam PoP<br/>ams.pop.cb:443<br/>QUIC: 443/UDP<br/>WireGuard: 51820/UDP<br/>TURN: 3478/UDP<br/>STUN: 19302/UDP]
+        A[ Amsterdam PoP<br/>ams.pop.cb:443<br/>QUIC: 443/UDP<br/>WireGuard: 51820/UDP<br/>TURN: 3478/UDP<br/>STUN: 19302/UDP]
     end
-    
+
     subgraph "Inter-PoP Connectivity"
         M <-->|MASQUE/QUIC| F
         F <-->|MASQUE/QUIC| A
         A <-->|MASQUE/QUIC| M
     end
-    
+
     classDef pop fill:#f3e5f5,stroke:#7b1fa2,stroke-width:3px
     classDef mesh fill:#e8f5e8,stroke:#388e3c,stroke-width:3px
-    
+
     class M,F,A pop
     class M,F,A mesh
 ```
@@ -226,7 +226,7 @@ spec:
       targetPort: 5551
       nodePort: 30191
       protocol: TCP
-    # P2P API  
+    # P2P API
     - name: p2p-api
       port: 5552
       targetPort: 9091
@@ -617,7 +617,7 @@ spec:
 scrape_configs:
 - job_name: 'edge-pops'
   static_configs:
-    - targets: 
+    - targets:
       - 'relay-mow:9091'
       - 'relay-fra:9091'
       - 'relay-ams:9091'
